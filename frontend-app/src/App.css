@@ -1,0 +1,152 @@
+/* App.css limpio y corregido */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  background-color: #f0f2f5;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #2d3748;
+}
+
+/* Contenedor principal alineado verticalmente al 100% y centrado */
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  gap: 30px;
+}
+
+/* Tarjetas individuales de cada sección ocupando todo el ancho disponible */
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  width: 100%;
+}
+
+/* Encabezados */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #1a202c;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #718096;
+  margin: 4px 0 0 0;
+}
+
+/* Botones */
+.btn-primary {
+  background-color: #3182ce;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #2b6cb0;
+}
+
+.btn-primary:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+/* Alertas y banners */
+.error-banner {
+  background-color: #fed7d7;
+  color: #c53030;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+/* Contenedor y diseño de tablas */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.table th {
+  background-color: #1a202c;
+  color: #ffffff;
+  padding: 12px 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+
+.table tbody tr:hover {
+  background-color: #f7fafc;
+}
+
+/* Badges y enlaces */
+.badge-barrio {
+  background-color: #ebf8ff;
+  color: #3182ce;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.badge-tecnico {
+  background-color: #e6fffa;
+  color: #319795;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.phone-link {
+  color: #2b6cb0;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.phone-link:hover {
+  text-decoration: underline;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #a0aec0;
+  font-style: italic;
+}
