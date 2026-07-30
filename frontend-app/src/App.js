@@ -61,7 +61,7 @@ function AdminPanel() {
     setLoadingWisp(true);
     setErrorWisp('');
     try {
-      const response = await axios.get('http://localhost:4000/api/wisphub/instalaciones');
+      const response = await axios.get('https://dashfiber-backend.onrender.com/api/wisphub/instalaciones');
       if (response.data.success) {
         setInstalaciones(response.data.data);
         setPaginaActual(1);
@@ -79,8 +79,8 @@ function AdminPanel() {
   const consultarCronograma = async (fechaFiltro = '') => {
     try {
       const url = fechaFiltro 
-        ? `http://localhost:4000/api/cronograma?fecha=${fechaFiltro}` 
-        : 'http://localhost:4000/api/cronograma';
+        ? `https://dashfiber-backend.onrender.com/api/cronograma?fecha=${fechaFiltro}` 
+        : 'https://dashfiber-backend.onrender.com/api/cronograma';
       const response = await axios.get(url);
       if (response.data.success) {
         setCronograma(response.data.data);
@@ -104,7 +104,7 @@ function AdminPanel() {
     const delayDebounceFn = setTimeout(async () => {
       setLoadingClientes(true);
       try {
-        const response = await axios.get(`http://localhost:4000/api/wisphub/clientes?q=${encodeURIComponent(textoBusquedaCliente)}`);
+        const response = await axios.get(`https://dashfiber-backend.onrender.com/api/wisphub/clientes?q=${encodeURIComponent(textoBusquedaCliente)}`);
         const listaClientes = response.data.data || response.data.clientes || response.data;
         
         if (Array.isArray(listaClientes)) {
@@ -166,13 +166,13 @@ function AdminPanel() {
     e.preventDefault();
     try {
       if (editandoId) {
-        const response = await axios.put(`http://localhost:4000/api/cronograma/${editandoId}`, nuevaActividad);
+        const response = await axios.put(`https://dashfiber-backend.onrender.com/api/cronograma/${editandoId}`, nuevaActividad);
         if (response.data.success) {
           alert('Actividad actualizada correctamente');
           setEditandoId(null);
         }
       } else {
-        const response = await axios.post('http://localhost:4000/api/cronograma', nuevaActividad);
+        const response = await axios.post('https://dashfiber-backend.onrender.com/api/cronograma', nuevaActividad);
         if (response.data.success) {
           alert('Actividad registrada correctamente');
         }
@@ -233,7 +233,7 @@ function AdminPanel() {
   const eliminarActividad = async (id) => {
     if (window.confirm('¿Estás seguro de eliminar este registro del cronograma?')) {
       try {
-        const response = await axios.delete(`http://localhost:4000/api/cronograma/${id}`);
+        const response = await axios.delete(`https://dashfiber-backend.onrender.com/api/cronograma/${id}`);
         if (response.data.success) {
           alert('Actividad eliminada');
           consultarCronograma(filtroFecha);

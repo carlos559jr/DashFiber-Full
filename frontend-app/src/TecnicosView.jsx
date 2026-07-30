@@ -22,8 +22,8 @@ export default function TecnicosView() {
     setLoading(true);
     try {
       const url = fechaFiltro 
-        ? `http://localhost:4000/api/cronograma?fecha=${fechaFiltro}` 
-        : 'http://localhost:4000/api/cronograma';
+        ? `https://dashfiber-backend.onrender.com/api/cronograma?fecha=${fechaFiltro}` 
+        : 'https://dashfiber-backend.onrender.com/api/cronograma';
       const response = await axios.get(url);
       if (response.data.success) {
         setCronograma(response.data.data);
@@ -57,7 +57,7 @@ export default function TecnicosView() {
       );
 
       // Apuntamos a la ruta específica "/estado"
-      await axios.put(`http://localhost:4000/api/cronograma/${idActividad}/estado`, {
+      await axios.put(`https://dashfiber-backend.onrender.com/api/cronograma/${idActividad}/estado`, {
         estado: nuevoEstado
       });
     } catch (err) {

@@ -23,7 +23,7 @@ export default function EstadisticasView() {
 
   const consultarCronograma = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/cronograma');
+      const response = await axios.get('https://dashfiber-backend.onrender.com/api/cronograma');
       if (response.data.success) {
         setCronograma(response.data.data);
       }
