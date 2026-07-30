@@ -153,7 +153,7 @@ function AdminPanel() {
       direccion: item.direccion || '',
       nombre_cliente: nombreCli,
       telefono: item.telefono || '',
-      descripcion: 'Instalación pendiente WispHub',
+      descripcion: 'INSTALACION SERVICIO DUO',
       asignado_a: item.tecnico || '',
       prioridad: 0
     });
