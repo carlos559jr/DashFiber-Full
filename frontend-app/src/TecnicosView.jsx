@@ -61,21 +61,28 @@ export default function TecnicosView() {
         estado: nuevoEstado
       });
     } catch (err) {
-      console.error("Error al actualizar el estado de la actividad:", err);
+      console.error("Error al actualizar el estado:", err);
       alert("No se pudo actualizar el estado en el servidor.");
       consultarCronogramaTecnicos(filtroFecha);
     }
   };
 
-  // 1. Filtrar por texto general
+  // 1. Filtrar por texto general + EXCLUIR actividades de Carlos automáticamente
   const cronogramaFiltrado = cronograma.filter((item) => {
+    const asignadoRaw = (item.asignado_a || '').toLowerCase();
+    
+    // Si el técnico asignado contiene "carlos", lo ocultamos por completo de este panel
+    if (asignadoRaw.includes('carlos')) {
+      return false;
+    }
+
     const texto = filtroGeneral.toLowerCase();
     const cliente = (item.nombre_cliente || '').toLowerCase();
     const zona = (item.zona || '').toLowerCase();
     const direccion = (item.direccion || '').toLowerCase();
     const tipo = (item.tipo || '').toLowerCase();
     const descripcion = (item.descripcion || '').toLowerCase();
-    const asignado = (item.asignado_a || '').toLowerCase();
+    const asignado = asignadoRaw;
     const telefono = (item.telefono || '').toLowerCase();
     const estado = (item.estado || '').toLowerCase();
 
@@ -94,7 +101,7 @@ export default function TecnicosView() {
   // 2. Extraer lista de técnicos principales
   const tecnicosPrincipales = useMemo(() => {
     const setTecnicos = new Set();
-    cronograma.forEach(item => {
+    cronogramaFiltrado.forEach(item => {
       if (item.asignado_a) {
         const partes = item.asignado_a.toUpperCase().split(/\/|,|\s+Y\s+|\s+E\s+/);
         partes.forEach(p => {
@@ -106,7 +113,7 @@ export default function TecnicosView() {
       }
     });
     return Array.from(setTecnicos);
-  }, [cronograma]);
+  }, [cronogramaFiltrado]);
 
   // 3. Agrupar las actividades por técnico
   const cronogramaAgrupadoPorTecnico = useMemo(() => {
@@ -156,7 +163,6 @@ export default function TecnicosView() {
     return filtrado;
   }, [cronogramaAgrupadoPorTecnico, filtroTecnico]);
 
-  // Obtener la lista de técnicos que tienen datos actualmente para llenar el select
   const opcionesTecnicos = Object.keys(cronogramaAgrupadoPorTecnico).sort();
 
   return (
