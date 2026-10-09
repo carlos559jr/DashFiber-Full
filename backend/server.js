@@ -160,26 +160,42 @@ app.put('/api/cronograma/:id', async (req, res) => {
     }
 });
 
-// RUTA CLAVE (Opción 1): Actualizar exclusivamente el estado desde el portal de técnicos
+// RUTA ACTUALIZADA: Actualizar estado y opcionalmente la fecha (si viene nuevaFecha por el pospuesto)
 app.put('/api/cronograma/:id/estado', async (req, res) => {
     try {
         const { id } = req.params;
-        const { estado } = req.body;
+        const { estado, nuevaFecha } = req.body;
 
-        const query = `
-            UPDATE cronograma_actividades 
-            SET estado = $1 
-            WHERE id = $2 
-            RETURNING *;
-        `;
+        let query;
+        let values;
 
-        const { rows } = await pool.query(query, [estado, id]);
+        if (nuevaFecha) {
+            // Si incluye nuevaFecha (caso POSPUESTO), actualizamos ambos campos
+            query = `
+                UPDATE cronograma_actividades 
+                SET estado = $1, fecha = $2 
+                WHERE id = $3 
+                RETURNING *;
+            `;
+            values = [estado, nuevaFecha, id];
+        } else {
+            // Si solo cambia el estado sin modificar la fecha
+            query = `
+                UPDATE cronograma_actividades 
+                SET estado = $1 
+                WHERE id = $2 
+                RETURNING *;
+            `;
+            values = [estado, id];
+        }
+
+        const { rows } = await pool.query(query, values);
 
         if (rows.length === 0) {
             return res.status(404).json({ success: false, message: 'Actividad no encontrada' });
         }
 
-        res.json({ success: true, message: 'Estado actualizado correctamente', data: rows[0] });
+        res.json({ success: true, message: 'Estado y fecha actualizados correctamente', data: rows[0] });
     } catch (error) {
         console.error("Error al actualizar estado:", error);
         res.status(500).json({ success: false, message: 'Error al actualizar el estado' });
