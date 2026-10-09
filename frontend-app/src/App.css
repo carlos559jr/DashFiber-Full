@@ -88,13 +88,13 @@ body {
 .table-container {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-.table {
+table.table {
   width: 100%;
+  min-width: 650px; /* Evita que las columnas se compriman demasiado */
   border-collapse: collapse;
-  text-align: left;
-  font-size: 14px;
 }
 
 .table th {
@@ -149,4 +149,18 @@ body {
   padding: 40px;
   color: #a0aec0;
   font-style: italic;
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  
+  .container {
+    padding: 5px !important;
+  }
+
+  h2 {
+    font-size: 18px !important;
+  }
 }
