@@ -3,7 +3,6 @@ import axios from 'axios';
 import './App.css';
 
 export default function TecnicosView() {
-  // Función auxiliar para obtener la fecha de hoy en formato YYYY-MM-DD local
   const obtenerFechaHoy = () => {
     const d = new Date();
     const year = d.getFullYear();
@@ -14,9 +13,14 @@ export default function TecnicosView() {
 
   const [cronograma, setCronograma] = useState([]);
   const [filtroGeneral, setFiltroGeneral] = useState('');
-  const [filtroFecha, setFiltroFecha] = useState(obtenerFechaHoy()); // Inicia con la fecha de hoy por defecto
+  const [filtroFecha, setFiltroFecha] = useState(obtenerFechaHoy());
   const [filtroTecnico, setFiltroTecnico] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Estados para controlar el modal del calendario de pospuesto
+  const [modalPospuestoAbierto, setModalPospuestoAbierto] = useState(false);
+  const [idActividadSeleccionada, setIdActividadSeleccionada] = useState(null);
+  const [nuevaFechaPospuesto, setNuevaFechaPospuesto] = useState(obtenerFechaHoy());
 
   const consultarCronogramaTecnicos = async (fechaFiltro = '') => {
     setLoading(true);
@@ -35,7 +39,6 @@ export default function TecnicosView() {
     }
   };
 
-  // Al cargar el componente por primera vez, consulta las actividades del día de hoy
   useEffect(() => {
     const fechaHoy = obtenerFechaHoy();
     consultarCronogramaTecnicos(fechaHoy);
@@ -47,43 +50,39 @@ export default function TecnicosView() {
     consultarCronogramaTecnicos(fecha);
   };
 
-  const handleCambiarEstado = async (idActividad, nuevoEstado) => {
-    let nuevaFechaPospuesto = null;
-
-    // Si seleccionan POSPUESTO, pedimos obligatoriamente la nueva fecha
+  const handleCambiarEstado = (idActividad, nuevoEstado) => {
     if (nuevoEstado === 'POSPUESTO') {
-      nuevaFechaPospuesto = prompt('Ingrese la nueva fecha para el servicio pospuesto (Formato: YYYY-MM-DD):', obtenerFechaHoy());
-      
-      // Si el usuario cancela o deja la fecha vacía, revertimos o detenemos la acción
-      if (!nuevaFechaPospuesto) {
-        return; 
-      }
+      // Si selecciona pospuesto, guardamos el ID y abrimos el modal con el calendario
+      setIdActividadSeleccionada(idActividad);
+      setNuevaFechaPospuesto(obtenerFechaHoy());
+      setModalPospuestoAbierto(true);
+      return;
     }
 
+    // Para los demás estados, actualizamos directamente
+    enviarActualizacionEstado(idActividad, nuevoEstado, null);
+  };
+
+  const enviarActualizacionEstado = async (idActividad, nuevoEstado, fechaPospuesto) => {
     try {
-      // Actualizamos de forma optimista en el estado local
       setCronograma((prevCronograma) =>
         prevCronograma.map((item) =>
           item.id === idActividad 
             ? { 
                 ...item, 
                 estado: nuevoEstado, 
-                ...(nuevaFechaPospuesto ? { fecha: nuevaFechaPospuesto } : {}) 
+                ...(fechaPospuesto ? { fecha: fechaPospuesto } : {}) 
               } 
             : item
         )
       );
 
-      // Preparamos los datos a enviar al backend
       const payload = { estado: nuevoEstado };
-      if (nuevaFechaPospuesto) {
-        payload.nuevaFecha = nuevaFechaPospuesto; // O el campo 'fecha' que procese tu backend
+      if (fechaPospuesto) {
+        payload.nuevaFecha = fechaPospuesto;
       }
 
-      // Apuntamos a la ruta específica "/estado"
       await axios.put(`https://dashfiber-backend.onrender.com/api/cronograma/${idActividad}/estado`, payload);
-      
-      // Opcional: recargamos para asegurar sincronización con base de datos
       consultarCronogramaTecnicos(filtroFecha);
     } catch (err) {
       console.error("Error al actualizar el estado:", err);
@@ -92,11 +91,24 @@ export default function TecnicosView() {
     }
   };
 
+  const confirmarPospuesto = () => {
+    if (!nuevaFechaPospuesto) {
+      alert("Por favor selecciona una fecha válida.");
+      return;
+    }
+    setModalPospuestoAbierto(false);
+    enviarActualizacionEstado(idActividadSeleccionada, 'POSPUESTO', nuevaFechaPospuesto);
+  };
+
+  const cancelarPospuesto = () => {
+    setModalPospuestoAbierto(false);
+    setIdActividadSeleccionada(null);
+    consultarCronogramaTecnicos(filtroFecha); // Restaura el select visualmente
+  };
+
   // 1. Filtrar por texto general + EXCLUIR actividades de Carlos automáticamente
   const cronogramaFiltrado = cronograma.filter((item) => {
     const asignadoRaw = (item.asignado_a || '').toLowerCase();
-    
-    // Si el técnico asignado contiene "carlos", lo ocultamos por completo de este panel
     if (asignadoRaw.includes('carlos')) {
       return false;
     }
@@ -123,7 +135,6 @@ export default function TecnicosView() {
     );
   });
 
-  // 2. Extraer lista de técnicos principales
   const tecnicosPrincipales = useMemo(() => {
     const setTecnicos = new Set();
     cronogramaFiltrado.forEach(item => {
@@ -140,7 +151,6 @@ export default function TecnicosView() {
     return Array.from(setTecnicos);
   }, [cronogramaFiltrado]);
 
-  // 3. Agrupar las actividades por técnico
   const cronogramaAgrupadoPorTecnico = useMemo(() => {
     const grupos = {};
 
@@ -177,10 +187,8 @@ export default function TecnicosView() {
     return gruposFiltrados;
   }, [cronogramaFiltrado, tecnicosPrincipales]);
 
-  // 4. Aplicar el filtro final del select de técnico
   const gruposAMostrar = useMemo(() => {
     if (!filtroTecnico) return cronogramaAgrupadoPorTecnico;
-    
     const filtrado = {};
     if (cronogramaAgrupadoPorTecnico[filtroTecnico]) {
       filtrado[filtroTecnico] = cronogramaAgrupadoPorTecnico[filtroTecnico];
@@ -200,11 +208,10 @@ export default function TecnicosView() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          
           <button 
             onClick={() => consultarCronogramaTecnicos(filtroFecha)} 
             disabled={loading} 
-            style={{ background: '#3182ce', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}
+            style={{ background: '#3182ce', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
           >
             {loading ? '🔄 Actualizando...' : '🔄 Sincronizar'}
           </button>
@@ -252,7 +259,6 @@ export default function TecnicosView() {
               <button onClick={() => { setFiltroFecha(''); consultarCronogramaTecnicos(''); }} style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Limpiar</button>
             )}
           </div>
-
         </div>
       </div>
 
@@ -347,6 +353,65 @@ export default function TecnicosView() {
 
           </div>
         ))
+      )}
+
+      {/* MODAL DE CALENDARIO PARA SELECCIONAR FECHA DE POSPUESTO */}
+      {modalPospuestoAbierto && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999
+        }}>
+          <div style={{
+            background: '#fff',
+            padding: '25px',
+            borderRadius: '8px',
+            width: '320px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '15px'
+          }}>
+            <h3 style={{ margin: 0, color: '#1a365d', fontSize: '18px' }}>📅 Seleccionar Nueva Fecha</h3>
+            <p style={{ margin: 0, fontSize: '13px', color: '#718096' }}>Elige la fecha a la cual deseas posponer esta actividad:</p>
+            
+            <input 
+              type="date"
+              value={nuevaFechaPospuesto}
+              onChange={(e) => setNuevaFechaPospuesto(e.target.value)}
+              style={{
+                padding: '10px',
+                borderRadius: '6px',
+                border: '1px solid #cbd5e0',
+                fontSize: '15px',
+                width: '100%',
+                fontWeight: 'bold'
+              }}
+            />
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+              <button 
+                onClick={cancelarPospuesto}
+                style={{ padding: '8px 14px', background: '#718096', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={confirmarPospuesto}
+                style={{ padding: '8px 14px', background: '#3182ce', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
