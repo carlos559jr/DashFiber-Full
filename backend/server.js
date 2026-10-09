@@ -160,26 +160,34 @@ app.put('/api/cronograma/:id', async (req, res) => {
     }
 });
 
-// RUTA ACTUALIZADA: Actualizar estado y opcionalmente la fecha (si viene nuevaFecha por el pospuesto)
+// RUTA ACTUALIZADA: Actualiza estado, fecha y adjunta el comentario/motivo de pospuesto si existe
 app.put('/api/cronograma/:id/estado', async (req, res) => {
     try {
         const { id } = req.params;
-        const { estado, nuevaFecha } = req.body;
+        const { estado, nuevaFecha, comentario } = req.body;
 
         let query;
         let values;
 
         if (nuevaFecha) {
-            // Si incluye nuevaFecha (caso POSPUESTO), actualizamos ambos campos
+            // Si se pospone, actualizamos estado, nueva fecha y concatenamos el comentario en la descripción
             query = `
                 UPDATE cronograma_actividades 
-                SET estado = $1, fecha = $2 
-                WHERE id = $3 
+                SET estado = $1, 
+                    fecha = $2, 
+                    descripcion = CASE 
+                        WHEN $3 <> '' AND descripcion IS NOT NULL AND descripcion <> '' 
+                        THEN descripcion || ' | Pospuesto: ' || $3 
+                        WHEN $3 <> '' 
+                        THEN 'Pospuesto: ' || $3 
+                        ELSE descripcion 
+                    END
+                WHERE id = $4 
                 RETURNING *;
             `;
-            values = [estado, nuevaFecha, id];
+            values = [estado, nuevaFecha, comentario || '', id];
         } else {
-            // Si solo cambia el estado sin modificar la fecha
+            // Si cambia de estado normalmente sin modificar fecha
             query = `
                 UPDATE cronograma_actividades 
                 SET estado = $1 

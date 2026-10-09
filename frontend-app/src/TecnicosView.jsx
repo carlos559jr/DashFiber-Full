@@ -17,10 +17,11 @@ export default function TecnicosView() {
   const [filtroTecnico, setFiltroTecnico] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Estados para controlar el modal del calendario de pospuesto
+  // Estados para controlar el modal del calendario y el comentario de pospuesto
   const [modalPospuestoAbierto, setModalPospuestoAbierto] = useState(false);
   const [idActividadSeleccionada, setIdActividadSeleccionada] = useState(null);
   const [nuevaFechaPospuesto, setNuevaFechaPospuesto] = useState(obtenerFechaHoy());
+  const [comentarioPospuesto, setComentarioPospuesto] = useState('');
 
   const consultarCronogramaTecnicos = async (fechaFiltro = '', esBackground = false) => {
     if (!esBackground) setLoading(true);
@@ -39,18 +40,14 @@ export default function TecnicosView() {
     }
   };
 
-  // Carga inicial y configuración del intervalo de sincronización automática (cada 5 minutos)
   useEffect(() => {
     const fechaHoy = obtenerFechaHoy();
     consultarCronogramaTecnicos(fechaHoy);
 
-    // Intervalo de 5 minutos (5 * 60 * 1000 ms = 300000 ms)
     const intervalo = setInterval(() => {
-      // Usamos el filtroFecha actual de forma silenciosa (esBackground = true para que no parpadee el loading)
       consultarCronogramaTecnicos(filtroFecha, true);
     }, 300000);
 
-    // Limpiamos el intervalo cuando el componente se desmonte para evitar fugas de memoria
     return () => clearInterval(intervalo);
   }, [filtroFecha]);
 
@@ -64,14 +61,15 @@ export default function TecnicosView() {
     if (nuevoEstado === 'POSPUESTO') {
       setIdActividadSeleccionada(idActividad);
       setNuevaFechaPospuesto(obtenerFechaHoy());
+      setComentarioPospuesto(''); // Limpiamos el comentario anterior
       setModalPospuestoAbierto(true);
       return;
     }
 
-    enviarActualizacionEstado(idActividad, nuevoEstado, null);
+    enviarActualizacionEstado(idActividad, nuevoEstado, null, '');
   };
 
-  const enviarActualizacionEstado = async (idActividad, nuevoEstado, fechaPospuesto) => {
+  const enviarActualizacionEstado = async (idActividad, nuevoEstado, fechaPospuesto, comentario) => {
     try {
       setCronograma((prevCronograma) =>
         prevCronograma.map((item) =>
@@ -88,6 +86,7 @@ export default function TecnicosView() {
       const payload = { estado: nuevoEstado };
       if (fechaPospuesto) {
         payload.nuevaFecha = fechaPospuesto;
+        payload.comentario = comentario;
       }
 
       await axios.put(`https://dashfiber-backend.onrender.com/api/cronograma/${idActividad}/estado`, payload);
@@ -105,7 +104,7 @@ export default function TecnicosView() {
       return;
     }
     setModalPospuestoAbierto(false);
-    enviarActualizacionEstado(idActividadSeleccionada, 'POSPUESTO', nuevaFechaPospuesto);
+    enviarActualizacionEstado(idActividadSeleccionada, 'POSPUESTO', nuevaFechaPospuesto, comentarioPospuesto);
   };
 
   const cancelarPospuesto = () => {
@@ -114,7 +113,7 @@ export default function TecnicosView() {
     consultarCronogramaTecnicos(filtroFecha);
   };
 
-  // 1. Filtrar por texto general + EXCLUIR actividades de Carlos automáticamente
+  // Filtrado y agrupación
   const cronogramaFiltrado = cronograma.filter((item) => {
     const asignadoRaw = (item.asignado_a || '').toLowerCase();
     if (asignadoRaw.includes('carlos')) {
@@ -212,7 +211,7 @@ export default function TecnicosView() {
       <div style={{ background: '#1a365d', padding: '15px', borderRadius: '8px', color: '#fff', display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '20px' }}>📱 Vista de Campo - Técnicos</h2>
-          <p style={{ margin: '5px 0 0 0', color: '#cbd5e0', fontSize: '13px' }}>Actividades y mantenimientos agrupados por personal asignado (Auto-sync c/5 min)</p>
+          <p style={{ margin: '5px 0 0 0', color: '#cbd5e0', fontSize: '13px' }}>Actividades y mantenimientos agrupados por personal asignado</p>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
@@ -286,7 +285,6 @@ export default function TecnicosView() {
               </span>
             </div>
 
-            {/* CONTENEDOR DE TARJETAS RESPONSIVAS */}
             <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px', background: '#f7fafc' }}>
               {itemsTecnico.map((item) => {
                 const estadoActual = (item.estado || 'PENDIENTE').toUpperCase();
@@ -377,7 +375,7 @@ export default function TecnicosView() {
         ))
       )}
 
-      {/* MODAL DE CALENDARIO PARA SELECCIONAR FECHA DE POSPUESTO */}
+      {/* MODAL DE CALENDARIO Y COMENTARIO PARA POSPUESTO */}
       {modalPospuestoAbierto && (
         <div style={{
           position: 'fixed',
@@ -395,26 +393,44 @@ export default function TecnicosView() {
             background: '#fff',
             padding: '25px',
             borderRadius: '8px',
-            width: '320px',
+            width: '340px',
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
             display: 'flex',
             flexDirection: 'column',
-            gap: '15px'
+            gap: '12px'
           }}>
-            <h3 style={{ margin: 0, color: '#1a365d', fontSize: '18px' }}>📅 Seleccionar Nueva Fecha</h3>
-            <p style={{ margin: 0, fontSize: '13px', color: '#718096' }}>Elige la fecha a la cual deseas posponer esta actividad:</p>
+            <h3 style={{ margin: 0, color: '#1a365d', fontSize: '18px' }}>📅 Posponer Actividad</h3>
+            <p style={{ margin: 0, fontSize: '13px', color: '#718096' }}>Selecciona la nueva fecha y escribe el motivo o comentario:</p>
             
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#2d3748', marginTop: '5px' }}>Nueva Fecha:</label>
             <input 
               type="date"
               value={nuevaFechaPospuesto}
               onChange={(e) => setNuevaFechaPospuesto(e.target.value)}
               style={{
-                padding: '10px',
+                padding: '8px',
                 borderRadius: '6px',
                 border: '1px solid #cbd5e0',
-                fontSize: '15px',
+                fontSize: '14px',
                 width: '100%',
                 fontWeight: 'bold'
+              }}
+            />
+
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#2d3748', marginTop: '5px' }}>Comentario / Motivo:</label>
+            <textarea 
+              placeholder="Ej: Cliente no se encuentra en casa, reprogramado..."
+              value={comentarioPospuesto}
+              onChange={(e) => setComentarioPospuesto(e.target.value)}
+              rows={3}
+              style={{
+                padding: '8px',
+                borderRadius: '6px',
+                border: '1px solid #cbd5e0',
+                fontSize: '13px',
+                width: '100%',
+                resize: 'none',
+                fontFamily: 'inherit'
               }}
             />
 
