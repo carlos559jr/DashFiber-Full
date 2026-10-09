@@ -52,14 +52,12 @@ export default function TecnicosView() {
 
   const handleCambiarEstado = (idActividad, nuevoEstado) => {
     if (nuevoEstado === 'POSPUESTO') {
-      // Si selecciona pospuesto, guardamos el ID y abrimos el modal con el calendario
       setIdActividadSeleccionada(idActividad);
       setNuevaFechaPospuesto(obtenerFechaHoy());
       setModalPospuestoAbierto(true);
       return;
     }
 
-    // Para los demás estados, actualizamos directamente
     enviarActualizacionEstado(idActividad, nuevoEstado, null);
   };
 
@@ -103,7 +101,7 @@ export default function TecnicosView() {
   const cancelarPospuesto = () => {
     setModalPospuestoAbierto(false);
     setIdActividadSeleccionada(null);
-    consultarCronogramaTecnicos(filtroFecha); // Restaura el select visualmente
+    consultarCronogramaTecnicos(filtroFecha);
   };
 
   // 1. Filtrar por texto general + EXCLUIR actividades de Carlos automáticamente
@@ -199,64 +197,61 @@ export default function TecnicosView() {
   const opcionesTecnicos = Object.keys(cronogramaAgrupadoPorTecnico).sort();
 
   return (
-    <div className="container" style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '1400px', margin: '0 auto', gap: '30px', padding: '20px' }}>
+    <div className="container" style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '1400px', margin: '0 auto', gap: '20px', padding: '10px' }}>
       
-      <div style={{ background: '#1a365d', padding: '20px', borderRadius: '8px', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+      <div style={{ background: '#1a365d', padding: '15px', borderRadius: '8px', color: '#fff', display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <div>
-          <h2 style={{ margin: 0 }}>📱 Vista de Campo - Técnicos</h2>
-          <p style={{ margin: '5px 0 0 0', color: '#cbd5e0', fontSize: '14px' }}>Actividades y mantenimientos agrupados por personal asignado</p>
+          <h2 style={{ margin: 0, fontSize: '20px' }}>📱 Vista de Campo - Técnicos</h2>
+          <p style={{ margin: '5px 0 0 0', color: '#cbd5e0', fontSize: '13px' }}>Actividades y mantenimientos agrupados por personal asignado</p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
           <button 
             onClick={() => consultarCronogramaTecnicos(filtroFecha)} 
             disabled={loading} 
-            style={{ background: '#3182ce', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+            style={{ background: '#3182ce', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
           >
             {loading ? '🔄 Actualizando...' : '🔄 Sincronizar'}
           </button>
 
-          <div style={{ background: '#fff', padding: '6px 10px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#4a5568' }}>🔍 Buscar:</label>
+          <div style={{ background: '#fff', padding: '6px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', flex: '1 1 140px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#4a5568' }}>🔍</label>
             <input 
               type="text" 
               placeholder="Filtrar..." 
               value={filtroGeneral} 
               onChange={(e) => setFiltroGeneral(e.target.value)} 
-              style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', color: '#000', width: '130px' }} 
+              style={{ padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', color: '#000', width: '100%', fontSize: '13px' }} 
             />
             {filtroGeneral && (
-              <button onClick={() => setFiltroGeneral('')} style={{ background: '#718096', color: '#fff', border: 'none', padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>✕</button>
+              <button onClick={() => setFiltroGeneral('')} style={{ background: '#718096', color: '#fff', border: 'none', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>✕</button>
             )}
           </div>
 
-          <div style={{ background: '#fff', padding: '6px 10px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#4a5568' }}>Técnico:</label>
+          <div style={{ background: '#fff', padding: '6px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', flex: '1 1 140px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#4a5568' }}>Técnico:</label>
             <select
               value={filtroTecnico}
               onChange={(e) => setFiltroTecnico(e.target.value)}
-              style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', color: '#000', fontSize: '13px' }}
+              style={{ padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', color: '#000', fontSize: '12px', width: '100%' }}
             >
-              <option value="">Todos los técnicos</option>
+              <option value="">Todos</option>
               {opcionesTecnicos.map(tec => (
                 <option key={tec} value={tec}>{tec}</option>
               ))}
             </select>
-            {filtroTecnico && (
-              <button onClick={() => setFiltroTecnico('')} style={{ background: '#718096', color: '#fff', border: 'none', padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>✕</button>
-            )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', padding: '6px 10px', borderRadius: '6px' }}>
-            <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#4a5568' }}>Fecha:</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fff', padding: '6px 8px', borderRadius: '6px', flex: '1 1 160px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#4a5568' }}>Fecha:</label>
             <input 
               type="date" 
               value={filtroFecha} 
               onChange={handleFiltroFechaChange} 
-              style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', color: '#000' }} 
+              style={{ padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', color: '#000', fontSize: '12px', width: '100%' }} 
             />
             {filtroFecha && (
-              <button onClick={() => { setFiltroFecha(''); consultarCronogramaTecnicos(''); }} style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Limpiar</button>
+              <button onClick={() => { setFiltroFecha(''); consultarCronogramaTecnicos(''); }} style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>Limpiar</button>
             )}
           </div>
         </div>
@@ -270,85 +265,106 @@ export default function TecnicosView() {
         </div>
       ) : (
         Object.entries(gruposAMostrar).map(([tecnico, itemsTecnico]) => (
-          <div key={tecnico} style={{ marginBottom: '35px', border: '1px solid #cbd5e0', borderRadius: '8px', overflow: 'hidden', background: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+          <div key={tecnico} style={{ marginBottom: '25px', border: '1px solid #cbd5e0', borderRadius: '8px', overflow: 'hidden', background: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
             
-            <div style={{ background: '#2b6cb0', color: '#fff', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h4 style={{ margin: 0, fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                🛠️ Técnico: <span style={{ background: '#1a365d', padding: '2px 10px', borderRadius: '4px', color: '#fff' }}>{tecnico}</span>
+            <div style={{ background: '#2b6cb0', color: '#fff', padding: '12px 15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h4 style={{ margin: 0, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                🛠️ Técnico: <span style={{ background: '#1a365d', padding: '2px 8px', borderRadius: '4px', color: '#fff' }}>{tecnico}</span>
               </h4>
-              <span style={{ fontSize: '13px', background: '#2c5282', padding: '3px 10px', borderRadius: '12px' }}>
+              <span style={{ fontSize: '12px', background: '#2c5282', padding: '3px 8px', borderRadius: '12px' }}>
                 {itemsTecnico.length} {itemsTecnico.length === 1 ? 'actividad' : 'actividades'}
               </span>
             </div>
 
-            <div className="table-container" style={{ margin: 0, overflowX: 'auto' }}>
-              <table className="table" style={{ width: '100%', borderCollapse: 'collapse', margin: 0 }}>
-                <thead>
-                  <tr style={{ background: '#edf2f7', color: '#2d3748', textAlign: 'left', fontSize: '13px' }}>
-                    <th style={{ padding: '10px' }}>PRIORIDAD</th>
-                    <th style={{ padding: '10px' }}>ESTADO</th>
-                    <th style={{ padding: '10px' }}>FECHA</th>
-                    <th style={{ padding: '10px' }}>TIPO</th>
-                    <th style={{ padding: '10px' }}>ZONA</th>
-                    <th style={{ padding: '10px' }}>DIRECCIÓN</th>
-                    <th style={{ padding: '10px' }}>NOMBRE CLIENTE</th>
-                    <th style={{ padding: '10px' }}>TELÉFONO</th>
-                    <th style={{ padding: '10px' }}>DESCRIPCIÓN</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {itemsTecnico.map((item) => {
-                    const estadoActual = (item.estado || 'PENDIENTE').toUpperCase();
-                    return (
-                      <tr key={item.id} style={{ borderBottom: '1px solid #edf2f7', fontSize: '14px' }}>
-                        <td style={{ padding: '10px' }}>
-                          <span style={{ background: '#bee3f8', color: '#2b6cb0', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
-                            {item.prioridad || 0}
-                          </span>
-                        </td>
-                        <td style={{ padding: '10px' }}>
-                          <select
-                            value={estadoActual}
-                            onChange={(e) => handleCambiarEstado(item.id, e.target.value)}
-                            style={{
-                              padding: '5px 8px',
-                              borderRadius: '6px',
-                              border: '1px solid #cbd5e0',
-                              fontWeight: 'bold',
-                              fontSize: '12px',
-                              background: 
-                                estadoActual === 'REALIZADO' ? '#c6f6d5' : 
-                                estadoActual === 'POSPUESTO' ? '#feebc8' : 
-                                estadoActual === 'SIN CONTACTO CON CLIENTE' ? '#fed7d7' : '#edf2f7',
-                              color: 
-                                estadoActual === 'REALIZADO' ? '#22543d' : 
-                                estadoActual === 'POSPUESTO' ? '#744210' : 
-                                estadoActual === 'SIN CONTACTO CON CLIENTE' ? '#9b2c2c' : '#2d3748',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <option value="PENDIENTE">PENDIENTE</option>
-                            <option value="REALIZADO">REALIZADO</option>
-                            <option value="SIN CONTACTO CON CLIENTE">SIN CONTACTO CON CLIENTE</option>
-                            <option value="POSPUESTO">POSPUESTO</option>
-                          </select>
-                        </td>
-                        <td style={{ padding: '10px' }}>{item.fecha ? item.fecha.split('T')[0] : ''}</td>
-                        <td style={{ padding: '10px' }}><b>{item.tipo}</b></td>
-                        <td style={{ padding: '10px' }}><span className="badge-barrio">{item.zona}</span></td>
-                        <td style={{ padding: '10px' }}>📍 {item.direccion}</td>
-                        <td style={{ padding: '10px' }}><b>{item.nombre_cliente}</b></td>
-                        <td style={{ padding: '10px' }}>
-                          <a href={`tel:${item.telefono}`} className="phone-link" style={{ color: '#3182ce', textDecoration: 'none', fontWeight: 'bold' }}>
-                            📞 {item.telefono || 'N/A'}
-                          </a>
-                        </td>
-                        <td style={{ padding: '10px' }}>{item.descripcion}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            {/* CONTENEDOR DE TARJETAS RESPONSIVAS EN LUGAR DE TABLA */}
+            <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px', background: '#f7fafc' }}>
+              {itemsTecnico.map((item) => {
+                const estadoActual = (item.estado || 'PENDIENTE').toUpperCase();
+                return (
+                  <div key={item.id} style={{
+                    background: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px'
+                  }}>
+                    {/* Cabecera de la tarjeta: Prioridad, Tipo y Selector de Estado */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '5px' }}>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <span style={{ background: '#bee3f8', color: '#2b6cb0', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold', fontSize: '12px' }}>
+                          P: {item.prioridad || 0}
+                        </span>
+                        <span style={{ background: '#edf2f7', color: '#2d3748', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold', fontSize: '12px' }}>
+                          {item.tipo}
+                        </span>
+                      </div>
+
+                      <select
+                        value={estadoActual}
+                        onChange={(e) => handleCambiarEstado(item.id, e.target.value)}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid #cbd5e0',
+                          fontWeight: 'bold',
+                          fontSize: '12px',
+                          background: 
+                            estadoActual === 'REALIZADO' ? '#c6f6d5' : 
+                            estadoActual === 'POSPUESTO' ? '#feebc8' : 
+                            estadoActual === 'SIN CONTACTO CON CLIENTE' ? '#fed7d7' : '#edf2f7',
+                          color: 
+                            estadoActual === 'REALIZADO' ? '#22543d' : 
+                            estadoActual === 'POSPUESTO' ? '#744210' : 
+                            estadoActual === 'SIN CONTACTO CON CLIENTE' ? '#9b2c2c' : '#2d3748',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option value="PENDIENTE">PENDIENTE</option>
+                        <option value="REALIZADO">REALIZADO</option>
+                        <option value="SIN CONTACTO CON CLIENTE">SIN CONTACTO CON CLIENTE</option>
+                        <option value="POSPUESTO">POSPUESTO</option>
+                      </select>
+                    </div>
+
+                    {/* Nombre del cliente */}
+                    <div style={{ fontSize: '14px', color: '#2d3748' }}>
+                      <b>👤 {item.nombre_cliente}</b>
+                    </div>
+
+                    {/* Detalles de ubicación y fecha */}
+                    <div style={{ fontSize: '13px', color: '#4a5568', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                      <div>📍 <b>Dirección:</b> {item.direccion} (<span style={{ color: '#3182ce' }}>{item.zona}</span>)</div>
+                      <div>📅 <b>Fecha:</b> {item.fecha ? item.fecha.split('T')[0] : 'N/A'}</div>
+                      {item.descripcion && <div>📝 <b>Nota:</b> {item.descripcion}</div>}
+                    </div>
+
+                    {/* Botón de llamada rápida */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+                      <a 
+                        href={`tel:${item.telefono}`} 
+                        style={{ 
+                          background: '#3182ce', 
+                          color: '#fff', 
+                          textDecoration: 'none', 
+                          padding: '6px 12px', 
+                          borderRadius: '6px', 
+                          fontSize: '13px', 
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px'
+                        }}
+                      >
+                        📞 Llamar: {item.telefono || 'N/A'}
+                      </a>
+                    </div>
+
+                  </div>
+                );
+              })}
             </div>
 
           </div>
