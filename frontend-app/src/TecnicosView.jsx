@@ -22,8 +22,8 @@ export default function TecnicosView() {
   const [idActividadSeleccionada, setIdActividadSeleccionada] = useState(null);
   const [nuevaFechaPospuesto, setNuevaFechaPospuesto] = useState(obtenerFechaHoy());
 
-  const consultarCronogramaTecnicos = async (fechaFiltro = '') => {
-    setLoading(true);
+  const consultarCronogramaTecnicos = async (fechaFiltro = '', esBackground = false) => {
+    if (!esBackground) setLoading(true);
     try {
       const url = fechaFiltro 
         ? `https://dashfiber-backend.onrender.com/api/cronograma?fecha=${fechaFiltro}` 
@@ -35,14 +35,24 @@ export default function TecnicosView() {
     } catch (err) {
       console.error("Error al consultar cronograma para técnicos:", err);
     } finally {
-      setLoading(false);
+      if (!esBackground) setLoading(false);
     }
   };
 
+  // Carga inicial y configuración del intervalo de sincronización automática (cada 5 minutos)
   useEffect(() => {
     const fechaHoy = obtenerFechaHoy();
     consultarCronogramaTecnicos(fechaHoy);
-  }, []);
+
+    // Intervalo de 5 minutos (5 * 60 * 1000 ms = 300000 ms)
+    const intervalo = setInterval(() => {
+      // Usamos el filtroFecha actual de forma silenciosa (esBackground = true para que no parpadee el loading)
+      consultarCronogramaTecnicos(filtroFecha, true);
+    }, 300000);
+
+    // Limpiamos el intervalo cuando el componente se desmonte para evitar fugas de memoria
+    return () => clearInterval(intervalo);
+  }, [filtroFecha]);
 
   const handleFiltroFechaChange = (e) => {
     const fecha = e.target.value;
@@ -202,7 +212,7 @@ export default function TecnicosView() {
       <div style={{ background: '#1a365d', padding: '15px', borderRadius: '8px', color: '#fff', display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '20px' }}>📱 Vista de Campo - Técnicos</h2>
-          <p style={{ margin: '5px 0 0 0', color: '#cbd5e0', fontSize: '13px' }}>Actividades y mantenimientos agrupados por personal asignado</p>
+          <p style={{ margin: '5px 0 0 0', color: '#cbd5e0', fontSize: '13px' }}>Actividades y mantenimientos agrupados por personal asignado (Auto-sync c/5 min)</p>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
@@ -276,7 +286,7 @@ export default function TecnicosView() {
               </span>
             </div>
 
-            {/* CONTENEDOR DE TARJETAS RESPONSIVAS EN LUGAR DE TABLA */}
+            {/* CONTENEDOR DE TARJETAS RESPONSIVAS */}
             <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px', background: '#f7fafc' }}>
               {itemsTecnico.map((item) => {
                 const estadoActual = (item.estado || 'PENDIENTE').toUpperCase();
@@ -291,7 +301,6 @@ export default function TecnicosView() {
                     flexDirection: 'column',
                     gap: '8px'
                   }}>
-                    {/* Cabecera de la tarjeta: Prioridad, Tipo y Selector de Estado */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '5px' }}>
                       <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                         <span style={{ background: '#bee3f8', color: '#2b6cb0', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold', fontSize: '12px' }}>
@@ -329,19 +338,16 @@ export default function TecnicosView() {
                       </select>
                     </div>
 
-                    {/* Nombre del cliente */}
                     <div style={{ fontSize: '14px', color: '#2d3748' }}>
                       <b>👤 {item.nombre_cliente}</b>
                     </div>
 
-                    {/* Detalles de ubicación y fecha */}
                     <div style={{ fontSize: '13px', color: '#4a5568', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                       <div>📍 <b>Dirección:</b> {item.direccion} (<span style={{ color: '#3182ce' }}>{item.zona}</span>)</div>
                       <div>📅 <b>Fecha:</b> {item.fecha ? item.fecha.split('T')[0] : 'N/A'}</div>
                       {item.descripcion && <div>📝 <b>Nota:</b> {item.descripcion}</div>}
                     </div>
 
-                    {/* Botón de llamada rápida */}
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
                       <a 
                         href={`tel:${item.telefono}`} 
