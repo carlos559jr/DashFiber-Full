@@ -48,18 +48,43 @@ export default function TecnicosView() {
   };
 
   const handleCambiarEstado = async (idActividad, nuevoEstado) => {
+    let nuevaFechaPospuesto = null;
+
+    // Si seleccionan POSPUESTO, pedimos obligatoriamente la nueva fecha
+    if (nuevoEstado === 'POSPUESTO') {
+      nuevaFechaPospuesto = prompt('Ingrese la nueva fecha para el servicio pospuesto (Formato: YYYY-MM-DD):', obtenerFechaHoy());
+      
+      // Si el usuario cancela o deja la fecha vacía, revertimos o detenemos la acción
+      if (!nuevaFechaPospuesto) {
+        return; 
+      }
+    }
+
     try {
       // Actualizamos de forma optimista en el estado local
       setCronograma((prevCronograma) =>
         prevCronograma.map((item) =>
-          item.id === idActividad ? { ...item, estado: nuevoEstado } : item
+          item.id === idActividad 
+            ? { 
+                ...item, 
+                estado: nuevoEstado, 
+                ...(nuevaFechaPospuesto ? { fecha: nuevaFechaPospuesto } : {}) 
+              } 
+            : item
         )
       );
 
+      // Preparamos los datos a enviar al backend
+      const payload = { estado: nuevoEstado };
+      if (nuevaFechaPospuesto) {
+        payload.nuevaFecha = nuevaFechaPospuesto; // O el campo 'fecha' que procese tu backend
+      }
+
       // Apuntamos a la ruta específica "/estado"
-      await axios.put(`https://dashfiber-backend.onrender.com/api/cronograma/${idActividad}/estado`, {
-        estado: nuevoEstado
-      });
+      await axios.put(`https://dashfiber-backend.onrender.com/api/cronograma/${idActividad}/estado`, payload);
+      
+      // Opcional: recargamos para asegurar sincronización con base de datos
+      consultarCronogramaTecnicos(filtroFecha);
     } catch (err) {
       console.error("Error al actualizar el estado:", err);
       alert("No se pudo actualizar el estado en el servidor.");
@@ -235,7 +260,7 @@ export default function TecnicosView() {
         <div style={{ textAlign: 'center', padding: '40px', color: '#718096', fontSize: '16px' }}>Cargando actividades...</div>
       ) : Object.keys(gruposAMostrar).length === 0 ? (
         <div className="empty-state" style={{ background: '#fff', padding: '40px', borderRadius: '8px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
-          <p style={{ color: '#718096', margin: 0 }}>No hay actividades registradas o coincidentes para mostrar en la fecha de hoy.</p>
+          <p style={{ color: '#718096', margin: 0 }}>No hay actividades registradas o coincidentes para mostrar en la fecha seleccionada.</p>
         </div>
       ) : (
         Object.entries(gruposAMostrar).map(([tecnico, itemsTecnico]) => (
