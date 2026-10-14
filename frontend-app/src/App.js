@@ -392,7 +392,7 @@ function AdminPanel() {
 
   return (
     <div className="container" style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '1400px', margin: '0 auto', gap: '30px', padding: '20px' }}>
-
+      
       {/* SECCIÓN 1: INSTALACIONES WISPHUB */}
       <div className="card" style={{ width: '100%' }}>
         <div className="header">
@@ -647,26 +647,26 @@ function AdminPanel() {
           </div>
         </div>
 
-        {/* TABLA SIN TELÉFONO Y CON ESPACIO LIBRE */}
-        <div style={{ width: '100%', overflowX: 'auto' }}>
+        {/* TABLA FLUIDA SIN SCROLL HORIZONTAL (table-layout: fixed y porcentajes exactos) */}
+        <div style={{ width: '100%', overflowX: 'hidden' }}>
           {cronogramaOrdenado.length === 0 ? (
             <div className="empty-state">
               <p>No se encontraron actividades que coincidan con la búsqueda o el filtro de fecha.</p>
             </div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '1100px', tableLayout: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', tableLayout: 'fixed' }}>
               <thead>
                 <tr style={{ background: '#00b4d8', color: '#fff', textAlign: 'left' }}>
-                  <th onClick={() => ordenarCronogramaPor('prioridad')} style={{ padding: '12px 10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>PRIORIDAD {obtenerFlechaCronograma('prioridad')}</th>
-                  <th onClick={() => ordenarCronogramaPor('estado')} style={{ padding: '12px 10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>ESTADO {obtenerFlechaCronograma('estado')}</th>
-                  <th onClick={() => ordenarCronogramaPor('fecha')} style={{ padding: '12px 10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>FECHA {obtenerFlechaCronograma('fecha')}</th>
-                  <th onClick={() => ordenarCronogramaPor('tipo')} style={{ padding: '12px 10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>TIPO {obtenerFlechaCronograma('tipo')}</th>
-                  <th onClick={() => ordenarCronogramaPor('zona')} style={{ padding: '12px 10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>ZONA {obtenerFlechaCronograma('zona')}</th>
-                  <th onClick={() => ordenarCronogramaPor('direccion')} style={{ padding: '12px 10px', cursor: 'pointer', minWidth: '200px' }}>DIRECCIÓN {obtenerFlechaCronograma('direccion')}</th>
-                  <th onClick={() => ordenarCronogramaPor('nombre_cliente')} style={{ padding: '12px 10px', cursor: 'pointer', minWidth: '180px' }}>CLIENTE {obtenerFlechaCronograma('nombre_cliente')}</th>
-                  <th onClick={() => ordenarCronogramaPor('descripcion')} style={{ padding: '12px 10px', cursor: 'pointer', minWidth: '200px' }}>DESCRIPCIÓN {obtenerFlechaCronograma('descripcion')}</th>
-                  <th onClick={() => ordenarCronogramaPor('asignado_a')} style={{ padding: '12px 10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>ASIGNADO {obtenerFlechaCronograma('asignado_a')}</th>
-                  <th style={{ padding: '12px 10px', textAlign: 'center', whiteSpace: 'nowrap' }}>ACCIONES</th>
+                  <th onClick={() => ordenarCronogramaPor('prioridad')} style={{ padding: '10px 6px', cursor: 'pointer', width: '7%' }}>PRIORIDAD {obtenerFlechaCronograma('prioridad')}</th>
+                  <th onClick={() => ordenarCronogramaPor('estado')} style={{ padding: '10px 6px', cursor: 'pointer', width: '13%' }}>ESTADO {obtenerFlechaCronograma('estado')}</th>
+                  <th onClick={() => ordenarCronogramaPor('fecha')} style={{ padding: '10px 6px', cursor: 'pointer', width: '9%' }}>FECHA {obtenerFlechaCronograma('fecha')}</th>
+                  <th onClick={() => ordenarCronogramaPor('tipo')} style={{ padding: '10px 6px', cursor: 'pointer', width: '10%' }}>TIPO {obtenerFlechaCronograma('tipo')}</th>
+                  <th onClick={() => ordenarCronogramaPor('zona')} style={{ padding: '10px 6px', cursor: 'pointer', width: '9%' }}>ZONA {obtenerFlechaCronograma('zona')}</th>
+                  <th onClick={() => ordenarCronogramaPor('direccion')} style={{ padding: '10px 6px', cursor: 'pointer', width: '14%' }}>DIRECCIÓN {obtenerFlechaCronograma('direccion')}</th>
+                  <th onClick={() => ordenarCronogramaPor('nombre_cliente')} style={{ padding: '10px 6px', cursor: 'pointer', width: '13%' }}>CLIENTE {obtenerFlechaCronograma('nombre_cliente')}</th>
+                  <th onClick={() => ordenarCronogramaPor('descripcion')} style={{ padding: '10px 6px', cursor: 'pointer', width: '11%' }}>DESCRIPCIÓN {obtenerFlechaCronograma('descripcion')}</th>
+                  <th onClick={() => ordenarCronogramaPor('asignado_a')} style={{ padding: '10px 6px', cursor: 'pointer', width: '8%' }}>ASIGNADO {obtenerFlechaCronograma('asignado_a')}</th>
+                  <th style={{ padding: '10px 6px', textAlign: 'center', width: '10%' }}>ACCIONES</th>
                 </tr>
               </thead>
               <tbody>
@@ -674,20 +674,20 @@ function AdminPanel() {
                   const estadoActual = (item.estado || 'PENDIENTE').toUpperCase();
                   return (
                     <tr key={item.id} style={{ borderBottom: '1px solid #edf2f7', background: editandoId === item.id ? '#feebc8' : 'transparent' }}>
-                      <td style={{ padding: '12px 10px', whiteSpace: 'nowrap' }}>
-                        <span style={{ background: '#bee3f8', color: '#2b6cb0', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold' }}>{item.prioridad || 0}</span>
+                      <td style={{ padding: '10px 6px', wordBreak: 'break-word' }}>
+                        <span style={{ background: '#bee3f8', color: '#2b6cb0', padding: '3px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{item.prioridad || 0}</span>
                       </td>
                       
-                      <td style={{ padding: '12px 10px', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '10px 6px' }}>
                         <select
                           value={estadoActual}
                           onChange={(e) => handleCambiarEstadoAdmin(item.id, e.target.value)}
                           style={{
-                            padding: '6px 10px',
+                            padding: '4px 6px',
                             borderRadius: '6px',
                             border: '1px solid #cbd5e0',
                             fontWeight: 'bold',
-                            fontSize: '12px',
+                            fontSize: '11px',
                             background: 
                               estadoActual === 'REALIZADO' ? '#c6f6d5' : 
                               estadoActual === 'POSPUESTO' ? '#feebc8' : 
@@ -696,7 +696,8 @@ function AdminPanel() {
                               estadoActual === 'REALIZADO' ? '#22543d' : 
                               estadoActual === 'POSPUESTO' ? '#744210' : 
                               estadoActual === 'SIN CONTACTO CON CLIENTE' ? '#9b2c2c' : '#2d3748',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            width: '100%'
                           }}
                         >
                           <option value="PENDIENTE">PENDIENTE</option>
@@ -706,30 +707,32 @@ function AdminPanel() {
                         </select>
                       </td>
 
-                      <td style={{ padding: '12px 10px', whiteSpace: 'nowrap' }}>{item.fecha ? item.fecha.split('T')[0] : ''}</td>
-                      <td style={{ padding: '12px 10px', whiteSpace: 'nowrap' }}><b>{item.tipo}</b></td>
-                      <td style={{ padding: '12px 10px', whiteSpace: 'nowrap' }}>
-                        <span className="badge-barrio">{item.zona}</span>
+                      <td style={{ padding: '10px 6px', wordBreak: 'break-word' }}>{item.fecha ? item.fecha.split('T')[0] : ''}</td>
+                      <td style={{ padding: '10px 6px', wordBreak: 'break-word' }}><b>{item.tipo}</b></td>
+                      <td style={{ padding: '10px 6px', wordBreak: 'break-word' }}>
+                        <span className="badge-barrio" style={{ fontSize: '11px', display: 'inline-block' }}>{item.zona}</span>
                       </td>
-                      <td style={{ padding: '12px 10px' }}>📍 {item.direccion}</td>
-                      <td style={{ padding: '12px 10px' }}><b>{item.nombre_cliente}</b></td>
-                      <td style={{ padding: '12px 10px' }}>{item.descripcion}</td>
-                      <td style={{ padding: '12px 10px', whiteSpace: 'nowrap' }}>
-                        <span className="badge-tecnico">{item.asignado_a}</span>
+                      <td style={{ padding: '10px 6px', wordBreak: 'break-word' }}>📍 {item.direccion}</td>
+                      <td style={{ padding: '10px 6px', wordBreak: 'break-word' }}><b>{item.nombre_cliente}</b></td>
+                      <td style={{ padding: '10px 6px', wordBreak: 'break-word', color: '#4a5568' }}>{item.descripcion}</td>
+                      <td style={{ padding: '10px 6px', wordBreak: 'break-word' }}>
+                        <span className="badge-tecnico" style={{ fontSize: '11px', display: 'inline-block' }}>{item.asignado_a}</span>
                       </td>
-                      <td style={{ padding: '12px 10px', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                        <button 
-                          onClick={() => iniciarEdicion(item)} 
-                          style={{ background: '#d69e2e', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginRight: '5px', fontSize: '11px' }}
-                        >
-                          ✏️ Editar
-                        </button>
-                        <button 
-                          onClick={() => eliminarActividad(item.id)} 
-                          style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px' }}
-                        >
-                          🗑️ Eliminar
-                        </button>
+                      <td style={{ padding: '10px 6px', textAlign: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                          <button 
+                            onClick={() => iniciarEdicion(item)} 
+                            style={{ background: '#d69e2e', color: '#fff', border: 'none', padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px', width: '100%' }}
+                          >
+                            ✏️ Editar
+                          </button>
+                          <button 
+                            onClick={() => eliminarActividad(item.id)} 
+                            style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px', width: '100%' }}
+                          >
+                            🗑️ Eliminar
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -740,7 +743,7 @@ function AdminPanel() {
         </div>
 
       </div>
-          {/* NAVEGACIÓN SUPERIOR */}
+            {/* NAVEGACIÓN SUPERIOR */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
         <Link to="/tecnicos" style={{ padding: '8px 16px', background: '#2b6cb0', color: '#fff', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '13px' }}>
           📱 Ir a Vista de Técnicos
@@ -749,6 +752,7 @@ function AdminPanel() {
           📊 Ver Panel Estadístico
         </Link>
       </div>
+
     </div>
   );
 }
