@@ -197,6 +197,42 @@ function AdminPanel() {
     }
   };
 
+  // Función para cambiar el estado directamente desde el Panel Principal
+  const handleCambiarEstadoAdmin = async (idActividad, nuevoEstado) => {
+    let nuevaFechaPospuesto = null;
+    let comentarioPospuesto = '';
+
+    if (nuevoEstado === 'POSPUESTO') {
+      nuevaFechaPospuesto = prompt('Ingrese la nueva fecha (YYYY-MM-DD):', fechaHoy);
+      if (!nuevaFechaPospuesto) return; // Si cancela, no hace nada
+      comentarioPospuesto = prompt('Ingrese un comentario o motivo del pospuesto:', '') || '';
+    }
+
+    try {
+      // Actualización optimista local
+      setCronograma((prev) =>
+        prev.map((item) =>
+          item.id === idActividad 
+            ? { ...item, estado: nuevoEstado, ...(nuevaFechaPospuesto ? { fecha: nuevaFechaPospuesto } : {}) } 
+            : item
+        )
+      );
+
+      const payload = { estado: nuevoEstado };
+      if (nuevaFechaPospuesto) {
+        payload.nuevaFecha = nuevaFechaPospuesto;
+        payload.comentario = comentarioPospuesto;
+      }
+
+      await axios.put(`https://dashfiber-backend.onrender.com/api/cronograma/${idActividad}/estado`, payload);
+      consultarCronograma(filtroFecha);
+    } catch (err) {
+      console.error("Error al actualizar el estado:", err);
+      alert("No se pudo actualizar el estado en el servidor.");
+      consultarCronograma(filtroFecha);
+    }
+  };
+
   const iniciarEdicion = (item) => {
     setEditandoId(item.id);
     setNuevaActividad({
@@ -327,6 +363,7 @@ function AdminPanel() {
     const descripcion = (item.descripcion || '').toLowerCase();
     const asignado = (item.asignado_a || '').toLowerCase();
     const telefono = (item.telefono || '').toLowerCase();
+    const estado = (item.estado || '').toLowerCase();
     const prioridadStr = String(item.prioridad || 0);
 
     return (
@@ -337,6 +374,7 @@ function AdminPanel() {
       descripcion.includes(texto) ||
       asignado.includes(texto) ||
       telefono.includes(texto) ||
+      estado.includes(texto) ||
       prioridadStr.includes(texto)
     );
   });
@@ -360,10 +398,9 @@ function AdminPanel() {
   });
 
   return (
-          
-      <div className="container" style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '1400px', margin: '0 auto', gap: '30px', padding: '20px' }}>
+    <div className="container" style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '1400px', margin: '0 auto', gap: '30px', padding: '20px' }}>
       
-           {/* SECCIÓN 1: INSTALACIONES WISPHUB */}
+      {/* SECCIÓN 1: INSTALACIONES WISPHUB */}
       <div className="card" style={{ width: '100%' }}>
         <div className="header">
           <div>
@@ -646,6 +683,7 @@ function AdminPanel() {
               <thead>
                 <tr style={{ background: '#00b4d8', color: '#fff' }}>
                   <th onClick={() => ordenarCronogramaPor('prioridad')} style={{ cursor: 'pointer', userSelect: 'none' }}>PRIORIDAD {obtenerFlechaCronograma('prioridad')}</th>
+                  <th onClick={() => ordenarCronogramaPor('estado')} style={{ cursor: 'pointer', userSelect: 'none' }}>ESTADO {obtenerFlechaCronograma('estado')}</th>
                   <th onClick={() => ordenarCronogramaPor('fecha')} style={{ cursor: 'pointer', userSelect: 'none' }}>FECHA {obtenerFlechaCronograma('fecha')}</th>
                   <th onClick={() => ordenarCronogramaPor('tipo')} style={{ cursor: 'pointer', userSelect: 'none' }}>TIPO {obtenerFlechaCronograma('tipo')}</th>
                   <th onClick={() => ordenarCronogramaPor('zona')} style={{ cursor: 'pointer', userSelect: 'none' }}>ZONA {obtenerFlechaCronograma('zona')}</th>
@@ -658,51 +696,75 @@ function AdminPanel() {
                 </tr>
               </thead>
               <tbody>
-                {cronogramaOrdenado.map((item) => (
-                  <tr key={item.id} style={{ background: editandoId === item.id ? '#feebc8' : 'transparent' }}>
-                    <td><span style={{ background: '#bee3f8', color: '#2b6cb0', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>{item.prioridad || 0}</span></td>
-                    <td>{item.fecha ? item.fecha.split('T')[0] : ''}</td>
-                    <td><b>{item.tipo}</b></td>
-                    <td><span className="badge-barrio">{item.zona}</span></td>
-                    <td>📍 {item.direccion}</td>
-                    <td><b>{item.nombre_cliente}</b></td>
-                    <td>
-                      <a href={`tel:${item.telefono}`} className="phone-link">📞 {item.telefono || 'N/A'}</a>
-                    </td>
-                    <td>{item.descripcion}</td>
-                    <td><span className="badge-tecnico">{item.asignado_a}</span></td>
-                    <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
-                      <button 
-                        onClick={() => iniciarEdicion(item)} 
-                        title="Editar"
-                        style={{ background: '#d69e2e', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', marginRight: '6px', fontWeight: 'bold' }}
-                      >
-                        ✏️
-                      </button>
-                      <button 
-                        onClick={() => eliminarActividad(item.id)} 
-                        title="Eliminar"
-                        style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-                      >
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {cronogramaOrdenado.map((item) => {
+                  const estadoActual = (item.estado || 'PENDIENTE').toUpperCase();
+                  return (
+                    <tr key={item.id} style={{ background: editandoId === item.id ? '#feebc8' : 'transparent' }}>
+                      <td><span style={{ background: '#bee3f8', color: '#2b6cb0', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>{item.prioridad || 0}</span></td>
+                      
+                      {/* SELECTOR DE ESTADO EN EL PANEL PRINCIPAL */}
+                      <td>
+                        <select
+                          value={estadoActual}
+                          onChange={(e) => handleCambiarEstadoAdmin(item.id, e.target.value)}
+                          style={{
+                            padding: '5px 8px',
+                            borderRadius: '6px',
+                            border: '1px solid #cbd5e0',
+                            fontWeight: 'bold',
+                            fontSize: '12px',
+                            background: 
+                              estadoActual === 'REALIZADO' ? '#c6f6d5' : 
+                              estadoActual === 'POSPUESTO' ? '#feebc8' : 
+                              estadoActual === 'SIN CONTACTO CON CLIENTE' ? '#fed7d7' : '#edf2f7',
+                            color: 
+                              estadoActual === 'REALIZADO' ? '#22543d' : 
+                              estadoActual === 'POSPUESTO' ? '#744210' : 
+                              estadoActual === 'SIN CONTACTO CON CLIENTE' ? '#9b2c2c' : '#2d3748',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <option value="PENDIENTE">PENDIENTE</option>
+                          <option value="REALIZADO">REALIZADO</option>
+                          <option value="SIN CONTACTO CON CLIENTE">SIN CONTACTO CON CLIENTE</option>
+                          <option value="POSPUESTO">POSPUESTO</option>
+                        </select>
+                      </td>
+
+                      <td>{item.fecha ? item.fecha.split('T')[0] : ''}</td>
+                      <td><b>{item.tipo}</b></td>
+                      <td><span className="badge-barrio">{item.zona}</span></td>
+                      <td>📍 {item.direccion}</td>
+                      <td><b>{item.nombre_cliente}</b></td>
+                      <td>
+                        <a href={`tel:${item.telefono}`} className="phone-link">📞 {item.telefono || 'N/A'}</a>
+                      </td>
+                      <td>{item.descripcion}</td>
+                      <td><span className="badge-tecnico">{item.asignado_a}</span></td>
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <button 
+                          onClick={() => iniciarEdicion(item)} 
+                          style={{ background: '#d69e2e', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginRight: '5px', fontSize: '11px' }}
+                        >
+                          ✏️ Editar
+                        </button>
+                        <button 
+                          onClick={() => eliminarActividad(item.id)} 
+                          style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px' }}
+                        >
+                          🗑️ Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
         </div>
+
       </div>
-       {/* Botón de acceso rápido hacia la página de estadísticas */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-        <Link to="/estadisticas" style={{ background: '#2b6cb0', color: '#fff', padding: '10px 20px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          📊 Ver Panel Estadístico
-        </Link>
-        <Link to="/tecnicos" style={{ background: '#4a5568', color: '#fff', padding: '10px 20px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          🛠️ Vista de Técnicos
-        </Link>
-      </div>
+
     </div>
   );
 }
