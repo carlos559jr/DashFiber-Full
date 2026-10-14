@@ -400,11 +400,6 @@ function AdminPanel() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
       
-      {/* BARRA DE NAVEGACIÓN SUPERIOR FIJA */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 1000, background: '#1a365d', padding: '12px 20px', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h3 style={{ margin: 0, fontSize: '18px' }}>⚡ DashFiber - Panel de Administración (Auto-sync c/5 min)</h3>
-      </div>
-
       <div className="container" style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '1400px', margin: '0 auto', gap: '30px', padding: '20px' }}>
         
         {/* SECCIÓN 1: INSTALACIONES WISPHUB */}
