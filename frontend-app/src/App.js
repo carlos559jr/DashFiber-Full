@@ -395,16 +395,6 @@ function AdminPanel() {
   return (
     <div className="container" style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '1400px', margin: '0 auto', gap: '30px', padding: '20px' }}>
       
-      {/* NAVEGACIÓN SUPERIOR */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-        <Link to="/tecnicos" style={{ padding: '8px 16px', background: '#2b6cb0', color: '#fff', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '13px' }}>
-          📱 Ir a Vista de Técnicos
-        </Link>
-        <Link to="/estadisticas" style={{ padding: '8px 16px', background: '#319795', color: '#fff', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '13px' }}>
-          📊 Ver Panel Estadístico
-        </Link>
-      </div>
-
       {/* SECCIÓN 1: INSTALACIONES WISPHUB */}
       <div className="card" style={{ width: '100%' }}>
         <div className="header">
@@ -429,25 +419,25 @@ function AdminPanel() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
                   <tr style={{ background: '#edf2f7', color: '#2d3748', textAlign: 'left' }}>
-                    <th onClick={() => ordenarPor('localidad')} style={{ padding: '10px', cursor: 'pointer', userSelect: 'none' }}>BARRIO {obtenerFlecha('localidad')}</th>
-                    <th onClick={() => ordenarPor('direccion')} style={{ padding: '10px', cursor: 'pointer', userSelect: 'none' }}>DIRECCIÓN {obtenerFlecha('direccion')}</th>
-                    <th onClick={() => ordenarPor('nombre')} style={{ padding: '10px', cursor: 'pointer', userSelect: 'none' }}>NOMBRE CLIENTE {obtenerFlecha('nombre')}</th>
-                    <th onClick={() => ordenarPor('telefono')} style={{ padding: '10px', cursor: 'pointer', userSelect: 'none' }}>TELÉFONO {obtenerFlecha('telefono')}</th>
-                    <th onClick={() => ordenarPor('fechaInstalacion')} style={{ padding: '10px', cursor: 'pointer', userSelect: 'none' }}>INSTALACIÓN {obtenerFlecha('fechaInstalacion')}</th>
-                    <th onClick={() => ordenarPor('tecnico')} style={{ padding: '10px', cursor: 'pointer', userSelect: 'none' }}>TÉCNICO WISP {obtenerFlecha('tecnico')}</th>
-                    <th style={{ padding: '10px', textAlign: 'center' }}>ACCIÓN</th>
+                    <th onClick={() => ordenarPor('localidad')} style={{ padding: '12px', cursor: 'pointer', userSelect: 'none' }}>BARRIO {obtenerFlecha('localidad')}</th>
+                    <th onClick={() => ordenarPor('direccion')} style={{ padding: '12px', cursor: 'pointer', userSelect: 'none' }}>DIRECCIÓN {obtenerFlecha('direccion')}</th>
+                    <th onClick={() => ordenarPor('nombre')} style={{ padding: '12px', cursor: 'pointer', userSelect: 'none' }}>NOMBRE CLIENTE {obtenerFlecha('nombre')}</th>
+                    <th onClick={() => ordenarPor('telefono')} style={{ padding: '12px', cursor: 'pointer', userSelect: 'none' }}>TELÉFONO {obtenerFlecha('telefono')}</th>
+                    <th onClick={() => ordenarPor('fechaInstalacion')} style={{ padding: '12px', cursor: 'pointer', userSelect: 'none' }}>INSTALACIÓN {obtenerFlecha('fechaInstalacion')}</th>
+                    <th onClick={() => ordenarPor('tecnico')} style={{ padding: '12px', cursor: 'pointer', userSelect: 'none' }}>TÉCNICO WISP {obtenerFlecha('tecnico')}</th>
+                    <th style={{ padding: '12px', textAlign: 'center' }}>ACCIÓN</th>
                   </tr>
                 </thead>
                 <tbody>
                   {instalacionesActuales.map((item, index) => (
                     <tr key={item.id || index} style={{ borderBottom: '1px solid #edf2f7' }}>
-                      <td style={{ padding: '10px' }}><span className="badge-barrio">{item.localidad || 'Sin barrio'}</span></td>
-                      <td style={{ padding: '10px' }}>📍 {item.direccion || 'Sin dirección'}</td>
-                      <td style={{ padding: '10px' }}><b>{item.nombre || 'Sin nombre'}</b></td>
-                      <td style={{ padding: '10px' }}><a href={`tel:${item.telefono}`} className="phone-link">📞 {item.telefono || 'Sin teléfono'}</a></td>
-                      <td style={{ padding: '10px' }}>⚡ {item.fechaInstalacion}</td>
-                      <td style={{ padding: '10px' }}><span className="badge-tecnico">{item.tecnico || 'Por asignar'}</span></td>
-                      <td style={{ padding: '10px', textAlign: 'center' }}>
+                      <td style={{ padding: '12px' }}><span className="badge-barrio">{item.localidad || 'Sin barrio'}</span></td>
+                      <td style={{ padding: '12px' }}>📍 {item.direccion || 'Sin dirección'}</td>
+                      <td style={{ padding: '12px' }}><b>{item.nombre || 'Sin nombre'}</b></td>
+                      <td style={{ padding: '12px' }}><a href={`tel:${item.telefono}`} className="phone-link">📞 {item.telefono || 'Sin teléfono'}</a></td>
+                      <td style={{ padding: '12px' }}>⚡ {item.fechaInstalacion}</td>
+                      <td style={{ padding: '12px' }}><span className="badge-tecnico">{item.tecnico || 'Por asignar'}</span></td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
                         <button 
                           onClick={() => enviarInstalacionAlCronograma(item)}
                           title="Enviar al Cronograma"
@@ -659,27 +649,27 @@ function AdminPanel() {
           </div>
         </div>
 
-        {/* TABLA COMPACTA Y SIN SCROLL FORZADO */}
+        {/* TABLA CON ESPACIADO CÓMODO Y ANCHOS DEFINIDOS */}
         <div style={{ width: '100%', overflowX: 'auto' }}>
           {cronogramaOrdenado.length === 0 ? (
             <div className="empty-state">
               <p>No se encontraron actividades que coincidan con la búsqueda o el filtro de fecha.</p>
             </div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', minWidth: '900px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '1100px' }}>
               <thead>
                 <tr style={{ background: '#00b4d8', color: '#fff', textAlign: 'left' }}>
-                  <th onClick={() => ordenarCronogramaPor('prioridad')} style={{ padding: '8px', cursor: 'pointer' }}>PRIORIDAD {obtenerFlechaCronograma('prioridad')}</th>
-                  <th onClick={() => ordenarCronogramaPor('estado')} style={{ padding: '8px', cursor: 'pointer' }}>ESTADO {obtenerFlechaCronograma('estado')}</th>
-                  <th onClick={() => ordenarCronogramaPor('fecha')} style={{ padding: '8px', cursor: 'pointer' }}>FECHA {obtenerFlechaCronograma('fecha')}</th>
-                  <th onClick={() => ordenarCronogramaPor('tipo')} style={{ padding: '8px', cursor: 'pointer' }}>TIPO {obtenerFlechaCronograma('tipo')}</th>
-                  <th onClick={() => ordenarCronogramaPor('zona')} style={{ padding: '8px', cursor: 'pointer' }}>ZONA {obtenerFlechaCronograma('zona')}</th>
-                  <th onClick={() => ordenarCronogramaPor('direccion')} style={{ padding: '8px', cursor: 'pointer' }}>DIRECCIÓN {obtenerFlechaCronograma('direccion')}</th>
-                  <th onClick={() => ordenarCronogramaPor('nombre_cliente')} style={{ padding: '8px', cursor: 'pointer' }}>CLIENTE {obtenerFlechaCronograma('nombre_cliente')}</th>
-                  <th onClick={() => ordenarCronogramaPor('telefono')} style={{ padding: '8px', cursor: 'pointer' }}>TELÉFONO {obtenerFlechaCronograma('telefono')}</th>
-                  <th onClick={() => ordenarCronogramaPor('descripcion')} style={{ padding: '8px', cursor: 'pointer' }}>DESCRIPCIÓN {obtenerFlechaCronograma('descripcion')}</th>
-                  <th onClick={() => ordenarCronogramaPor('asignado_a')} style={{ padding: '8px', cursor: 'pointer' }}>ASIGNADO {obtenerFlechaCronograma('asignado_a')}</th>
-                  <th style={{ padding: '8px', textAlign: 'center' }}>ACCIONES</th>
+                  <th onClick={() => ordenarCronogramaPor('prioridad')} style={{ padding: '12px 10px', cursor: 'pointer', width: '80px' }}>PRIORIDAD {obtenerFlechaCronograma('prioridad')}</th>
+                  <th onClick={() => ordenarCronogramaPor('estado')} style={{ padding: '12px 10px', cursor: 'pointer', width: '140px' }}>ESTADO {obtenerFlechaCronograma('estado')}</th>
+                  <th onClick={() => ordenarCronogramaPor('fecha')} style={{ padding: '12px 10px', cursor: 'pointer', width: '110px' }}>FECHA {obtenerFlechaCronograma('fecha')}</th>
+                  <th onClick={() => ordenarCronogramaPor('tipo')} style={{ padding: '12px 10px', cursor: 'pointer', width: '130px' }}>TIPO {obtenerFlechaCronograma('tipo')}</th>
+                  <th onClick={() => ordenarCronogramaPor('zona')} style={{ padding: '12px 10px', cursor: 'pointer', width: '110px' }}>ZONA {obtenerFlechaCronograma('zona')}</th>
+                  <th onClick={() => ordenarCronogramaPor('direccion')} style={{ padding: '12px 10px', cursor: 'pointer', width: '180px' }}>DIRECCIÓN {obtenerFlechaCronograma('direccion')}</th>
+                  <th onClick={() => ordenarCronogramaPor('nombre_cliente')} style={{ padding: '12px 10px', cursor: 'pointer', width: '160px' }}>CLIENTE {obtenerFlechaCronograma('nombre_cliente')}</th>
+                  <th onClick={() => ordenarCronogramaPor('telefono')} style={{ padding: '12px 10px', cursor: 'pointer', width: '120px' }}>TELÉFONO {obtenerFlechaCronograma('telefono')}</th>
+                  <th onClick={() => ordenarCronogramaPor('descripcion')} style={{ padding: '12px 10px', cursor: 'pointer', width: '160px' }}>DESCRIPCIÓN {obtenerFlechaCronograma('descripcion')}</th>
+                  <th onClick={() => ordenarCronogramaPor('asignado_a')} style={{ padding: '12px 10px', cursor: 'pointer', width: '120px' }}>ASIGNADO {obtenerFlechaCronograma('asignado_a')}</th>
+                  <th style={{ padding: '12px 10px', textAlign: 'center', width: '140px' }}>ACCIONES</th>
                 </tr>
               </thead>
               <tbody>
@@ -687,18 +677,18 @@ function AdminPanel() {
                   const estadoActual = (item.estado || 'PENDIENTE').toUpperCase();
                   return (
                     <tr key={item.id} style={{ borderBottom: '1px solid #edf2f7', background: editandoId === item.id ? '#feebc8' : 'transparent' }}>
-                      <td style={{ padding: '8px' }}><span style={{ background: '#bee3f8', color: '#2b6cb0', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{item.prioridad || 0}</span></td>
+                      <td style={{ padding: '12px 10px' }}><span style={{ background: '#bee3f8', color: '#2b6cb0', padding: '3px 8px', borderRadius: '4px', fontWeight: 'bold' }}>{item.prioridad || 0}</span></td>
                       
-                      <td style={{ padding: '8px' }}>
+                      <td style={{ padding: '12px 10px' }}>
                         <select
                           value={estadoActual}
                           onChange={(e) => handleCambiarEstadoAdmin(item.id, e.target.value)}
                           style={{
-                            padding: '4px 6px',
-                            borderRadius: '4px',
+                            padding: '6px 8px',
+                            borderRadius: '6px',
                             border: '1px solid #cbd5e0',
                             fontWeight: 'bold',
-                            fontSize: '11px',
+                            fontSize: '12px',
                             background: 
                               estadoActual === 'REALIZADO' ? '#c6f6d5' : 
                               estadoActual === 'POSPUESTO' ? '#feebc8' : 
@@ -707,7 +697,8 @@ function AdminPanel() {
                               estadoActual === 'REALIZADO' ? '#22543d' : 
                               estadoActual === 'POSPUESTO' ? '#744210' : 
                               estadoActual === 'SIN CONTACTO CON CLIENTE' ? '#9b2c2c' : '#2d3748',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            width: '100%'
                           }}
                         >
                           <option value="PENDIENTE">PENDIENTE</option>
@@ -717,26 +708,26 @@ function AdminPanel() {
                         </select>
                       </td>
 
-                      <td style={{ padding: '8px' }}>{item.fecha ? item.fecha.split('T')[0] : ''}</td>
-                      <td style={{ padding: '8px' }}><b>{item.tipo}</b></td>
-                      <td style={{ padding: '8px' }}><span className="badge-barrio">{item.zona}</span></td>
-                      <td style={{ padding: '8px' }}>📍 {item.direccion}</td>
-                      <td style={{ padding: '8px' }}><b>{item.nombre_cliente}</b></td>
-                      <td style={{ padding: '8px' }}>
+                      <td style={{ padding: '12px 10px' }}>{item.fecha ? item.fecha.split('T')[0] : ''}</td>
+                      <td style={{ padding: '12px 10px' }}><b>{item.tipo}</b></td>
+                      <td style={{ padding: '12px 10px' }}><span className="badge-barrio">{item.zona}</span></td>
+                      <td style={{ padding: '12px 10px' }}>📍 {item.direccion}</td>
+                      <td style={{ padding: '12px 10px' }}><b>{item.nombre_cliente}</b></td>
+                      <td style={{ padding: '12px 10px' }}>
                         <a href={`tel:${item.telefono}`} className="phone-link">📞 {item.telefono || 'N/A'}</a>
                       </td>
-                      <td style={{ padding: '8px' }}>{item.descripcion}</td>
-                      <td style={{ padding: '8px' }}><span className="badge-tecnico">{item.asignado_a}</span></td>
-                      <td style={{ padding: '8px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '12px 10px' }}>{item.descripcion}</td>
+                      <td style={{ padding: '12px 10px' }}><span className="badge-tecnico">{item.asignado_a}</span></td>
+                      <td style={{ padding: '12px 10px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                         <button 
                           onClick={() => iniciarEdicion(item)} 
-                          style={{ background: '#d69e2e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginRight: '4px', fontSize: '11px' }}
+                          style={{ background: '#d69e2e', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginRight: '5px', fontSize: '12px' }}
                         >
                           ✏️ Editar
                         </button>
                         <button 
                           onClick={() => eliminarActividad(item.id)} 
-                          style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px' }}
+                          style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
                         >
                           🗑️ Eliminar
                         </button>
@@ -750,15 +741,16 @@ function AdminPanel() {
         </div>
 
       </div>
-      {/* Botón de acceso rápido hacia la página de estadísticas */}
+            {/* NAVEGACIÓN SUPERIOR */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-        <Link to="/estadisticas" style={{ background: '#2b6cb0', color: '#fff', padding: '10px 20px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Link to="/tecnicos" style={{ padding: '8px 16px', background: '#2b6cb0', color: '#fff', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '13px' }}>
+          📱 Ir a Vista de Técnicos
+        </Link>
+        <Link to="/estadisticas" style={{ padding: '8px 16px', background: '#319795', color: '#fff', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '13px' }}>
           📊 Ver Panel Estadístico
         </Link>
-        <Link to="/tecnicos" style={{ background: '#4a5568', color: '#fff', padding: '10px 20px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          🛠️ Vista de Técnicos
-        </Link>
       </div>
+
     </div>
   );
 }
