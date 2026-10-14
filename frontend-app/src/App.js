@@ -764,7 +764,17 @@ function AdminPanel() {
         </div>
 
       </div>
-
+      {/* Botón de acceso rápido hacia la página de estadísticas */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+        <Link to="/estadisticas" style={{ background: '#2b6cb0', color: '#fff', padding: '10px 20px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          📊 Ver Panel Estadístico
+        </Link>
+        <Link to="/tecnicos" style={{ background: '#4a5568', color: '#fff', padding: '10px 20px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          🛠️ Vista de Técnicos
+        </Link>
+      </div>
     </div>
+    
   );
+  
 }
