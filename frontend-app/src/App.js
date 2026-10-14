@@ -8,10 +8,7 @@ import './App.css';
 export default function App() {
   return (
     <Routes>
-      {/* Ruta 1: El Panel de Administración (Página Principal) */}
       <Route path="/" element={<AdminPanel />} />
-
-      {/* Ruta 2: La página independiente para los Técnicos (Ej: http://localhost:3000/tecnicos) */}
       <Route path="/tecnicos" element={<TecnicosView />} />
       <Route path="/estadisticas" element={<EstadisticasView />} />
     </Routes>
@@ -197,19 +194,17 @@ function AdminPanel() {
     }
   };
 
-  // Función para cambiar el estado directamente desde el Panel Principal
   const handleCambiarEstadoAdmin = async (idActividad, nuevoEstado) => {
     let nuevaFechaPospuesto = null;
     let comentarioPospuesto = '';
 
     if (nuevoEstado === 'POSPUESTO') {
       nuevaFechaPospuesto = prompt('Ingrese la nueva fecha (YYYY-MM-DD):', fechaHoy);
-      if (!nuevaFechaPospuesto) return; // Si cancela, no hace nada
+      if (!nuevaFechaPospuesto) return;
       comentarioPospuesto = prompt('Ingrese un comentario o motivo del pospuesto:', '') || '';
     }
 
     try {
-      // Actualización optimista local
       setCronograma((prev) =>
         prev.map((item) =>
           item.id === idActividad 
@@ -400,6 +395,16 @@ function AdminPanel() {
   return (
     <div className="container" style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '1400px', margin: '0 auto', gap: '30px', padding: '20px' }}>
       
+      {/* NAVEGACIÓN SUPERIOR */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+        <Link to="/tecnicos" style={{ padding: '8px 16px', background: '#2b6cb0', color: '#fff', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '13px' }}>
+          📱 Ir a Vista de Técnicos
+        </Link>
+        <Link to="/estadisticas" style={{ padding: '8px 16px', background: '#319795', color: '#fff', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '13px' }}>
+          📊 Ver Panel Estadístico
+        </Link>
+      </div>
+
       {/* SECCIÓN 1: INSTALACIONES WISPHUB */}
       <div className="card" style={{ width: '100%' }}>
         <div className="header">
@@ -414,35 +419,35 @@ function AdminPanel() {
 
         {errorWisp && <div className="error-banner">{errorWisp}</div>}
 
-        <div className="table-container">
+        <div style={{ width: '100%', overflowX: 'auto' }}>
           {instalaciones.length === 0 && !loadingWisp ? (
             <div className="empty-state">
               <p>No hay instalaciones pendientes encontradas en este momento.</p>
             </div>
           ) : (
             <>
-              <table className="table">
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
-                  <tr>
-                    <th onClick={() => ordenarPor('localidad')} style={{ cursor: 'pointer', userSelect: 'none' }}>BARRIO {obtenerFlecha('localidad')}</th>
-                    <th onClick={() => ordenarPor('direccion')} style={{ cursor: 'pointer', userSelect: 'none' }}>DIRECCIÓN {obtenerFlecha('direccion')}</th>
-                    <th onClick={() => ordenarPor('nombre')} style={{ cursor: 'pointer', userSelect: 'none' }}>NOMBRE CLIENTE {obtenerFlecha('nombre')}</th>
-                    <th onClick={() => ordenarPor('telefono')} style={{ cursor: 'pointer', userSelect: 'none' }}>TELÉFONO {obtenerFlecha('telefono')}</th>
-                    <th onClick={() => ordenarPor('fechaInstalacion')} style={{ cursor: 'pointer', userSelect: 'none' }}>INSTALACIÓN {obtenerFlecha('fechaInstalacion')}</th>
-                    <th onClick={() => ordenarPor('tecnico')} style={{ cursor: 'pointer', userSelect: 'none' }}>TÉCNICO WISP {obtenerFlecha('tecnico')}</th>
-                    <th style={{ textAlign: 'center' }}>ACCIÓN</th>
+                  <tr style={{ background: '#edf2f7', color: '#2d3748', textAlign: 'left' }}>
+                    <th onClick={() => ordenarPor('localidad')} style={{ padding: '10px', cursor: 'pointer', userSelect: 'none' }}>BARRIO {obtenerFlecha('localidad')}</th>
+                    <th onClick={() => ordenarPor('direccion')} style={{ padding: '10px', cursor: 'pointer', userSelect: 'none' }}>DIRECCIÓN {obtenerFlecha('direccion')}</th>
+                    <th onClick={() => ordenarPor('nombre')} style={{ padding: '10px', cursor: 'pointer', userSelect: 'none' }}>NOMBRE CLIENTE {obtenerFlecha('nombre')}</th>
+                    <th onClick={() => ordenarPor('telefono')} style={{ padding: '10px', cursor: 'pointer', userSelect: 'none' }}>TELÉFONO {obtenerFlecha('telefono')}</th>
+                    <th onClick={() => ordenarPor('fechaInstalacion')} style={{ padding: '10px', cursor: 'pointer', userSelect: 'none' }}>INSTALACIÓN {obtenerFlecha('fechaInstalacion')}</th>
+                    <th onClick={() => ordenarPor('tecnico')} style={{ padding: '10px', cursor: 'pointer', userSelect: 'none' }}>TÉCNICO WISP {obtenerFlecha('tecnico')}</th>
+                    <th style={{ padding: '10px', textAlign: 'center' }}>ACCIÓN</th>
                   </tr>
                 </thead>
                 <tbody>
                   {instalacionesActuales.map((item, index) => (
-                    <tr key={item.id || index}>
-                      <td><span className="badge-barrio">{item.localidad || 'Sin barrio'}</span></td>
-                      <td>📍 {item.direccion || 'Sin dirección'}</td>
-                      <td><b>{item.nombre || 'Sin nombre'}</b></td>
-                      <td><a href={`tel:${item.telefono}`} className="phone-link">📞 {item.telefono || 'Sin teléfono'}</a></td>
-                      <td>⚡ {item.fechaInstalacion}</td>
-                      <td><span className="badge-tecnico">{item.tecnico || 'Por asignar'}</span></td>
-                      <td style={{ textAlign: 'center' }}>
+                    <tr key={item.id || index} style={{ borderBottom: '1px solid #edf2f7' }}>
+                      <td style={{ padding: '10px' }}><span className="badge-barrio">{item.localidad || 'Sin barrio'}</span></td>
+                      <td style={{ padding: '10px' }}>📍 {item.direccion || 'Sin dirección'}</td>
+                      <td style={{ padding: '10px' }}><b>{item.nombre || 'Sin nombre'}</b></td>
+                      <td style={{ padding: '10px' }}><a href={`tel:${item.telefono}`} className="phone-link">📞 {item.telefono || 'Sin teléfono'}</a></td>
+                      <td style={{ padding: '10px' }}>⚡ {item.fechaInstalacion}</td>
+                      <td style={{ padding: '10px' }}><span className="badge-tecnico">{item.tecnico || 'Por asignar'}</span></td>
+                      <td style={{ padding: '10px', textAlign: 'center' }}>
                         <button 
                           onClick={() => enviarInstalacionAlCronograma(item)}
                           title="Enviar al Cronograma"
@@ -478,7 +483,7 @@ function AdminPanel() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmitCronograma} style={{ background: editandoId ? '#feebc8' : '#f8fafc', border: editandoId ? '2px solid #dd6b20' : '1px solid #e2e8f0', padding: '20px', borderRadius: '8px', marginBottom: '10px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+        <form onSubmit={handleSubmitCronograma} style={{ background: editandoId ? '#feebc8' : '#f8fafc', border: editandoId ? '2px solid #dd6b20' : '1px solid #e2e8f0', padding: '20px', borderRadius: '8px', marginBottom: '15px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
           <div style={{ gridColumn: '1 / -1' }}>
             <h4 style={{ margin: '0 0 10px 0', color: editandoId ? '#c05621' : '#2d3748' }}>
               {editandoId ? `✏️ Editando Actividad ID: ${editandoId}` : '➕ Registrar Nueva Actividad'}
@@ -486,13 +491,13 @@ function AdminPanel() {
           </div>
           
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Fecha</label>
-            <input type="date" required value={nuevaActividad.fecha} onChange={e => setNuevaActividad({...nuevaActividad, fecha: e.target.value})} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff' }} />
+            <label style={{ fontSize: '11px', fontWeight: 'bold' }}>Fecha</label>
+            <input type="date" required value={nuevaActividad.fecha} onChange={e => setNuevaActividad({...nuevaActividad, fecha: e.target.value})} style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', fontSize: '12px' }} />
           </div>
           
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Tipo</label>
-            <select value={nuevaActividad.tipo} onChange={e => setNuevaActividad({...nuevaActividad, tipo: e.target.value})} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold' }}>Tipo</label>
+            <select value={nuevaActividad.tipo} onChange={e => setNuevaActividad({...nuevaActividad, tipo: e.target.value})} style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', fontSize: '12px' }}>
               <option value="INSTALACION">INSTALACION</option>
               <option value="MANTENIMIENTO">MANTENIMIENTO</option>
               <option value="REPETIDOR">REPETIDOR</option>
@@ -509,23 +514,23 @@ function AdminPanel() {
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Prioridad (Nivel numérico)</label>
+            <label style={{ fontSize: '11px', fontWeight: 'bold' }}>Prioridad</label>
             <input 
               type="number" 
-              placeholder="Ej: 1, 2, 3..." 
+              placeholder="Ej: 1, 2..." 
               value={nuevaActividad.prioridad} 
               onChange={e => setNuevaActividad({...nuevaActividad, prioridad: parseInt(e.target.value) || 0})} 
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff' }} 
+              style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', fontSize: '12px' }} 
             />
           </div>
 
           <div style={{ gridColumn: 'span 2', position: 'relative' }}>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#2b6cb0' }}>
-              {loadingClientes ? '🔄 Buscando clientes globalmente...' : '🔍 Buscar Cliente en WispHub (Escribe para filtrar)'}
+            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#2b6cb0' }}>
+              {loadingClientes ? '🔄 Buscando...' : '🔍 Buscar Cliente WispHub'}
             </label>
             <input 
               type="text"
-              placeholder="Escribe el nombre o zona del cliente..."
+              placeholder="Escribe nombre o zona..."
               value={textoBusquedaCliente}
               onChange={(e) => {
                 setTextoBusquedaCliente(e.target.value);
@@ -533,7 +538,7 @@ function AdminPanel() {
                 setMostrarSugerencias(true);
               }}
               onFocus={() => setMostrarSugerencias(true)}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #3182ce', background: '#ebf8ff', fontWeight: 'bold' }}
+              style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #3182ce', background: '#ebf8ff', fontWeight: 'bold', fontSize: '12px' }}
               autoComplete="off"
             />
             
@@ -543,7 +548,7 @@ function AdminPanel() {
                 top: '100%',
                 left: 0,
                 right: 0,
-                maxHeight: '200px',
+                maxHeight: '180px',
                 overflowY: 'auto',
                 backgroundColor: '#fff',
                 border: '1px solid #cbd5e0',
@@ -555,7 +560,7 @@ function AdminPanel() {
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}>
                 {loadingClientes ? (
-                  <li style={{ padding: '8px 12px', fontSize: '13px', color: '#718096' }}>Buscando en WispHub...</li>
+                  <li style={{ padding: '6px 10px', fontSize: '12px', color: '#718096' }}>Buscando...</li>
                 ) : clientesFiltrados.length > 0 ? (
                   clientesFiltrados.map((cli, idx) => {
                     const nombreCli = cli.nombre || cli.nombre_completo || 'Sin nombre';
@@ -564,12 +569,7 @@ function AdminPanel() {
                       <li 
                         key={cli.id || idx}
                         onClick={() => seleccionarClienteWisp(cli)}
-                        style={{
-                          padding: '8px 12px',
-                          cursor: 'pointer',
-                          borderBottom: '1px solid #edf2f7',
-                          fontSize: '13px'
-                        }}
+                        style={{ padding: '6px 10px', cursor: 'pointer', borderBottom: '1px solid #edf2f7', fontSize: '12px' }}
                         onMouseEnter={(e) => e.target.style.backgroundColor = '#ebf8ff'}
                         onMouseLeave={(e) => e.target.style.backgroundColor = '#fff'}
                       >
@@ -578,141 +578,127 @@ function AdminPanel() {
                     );
                   })
                 ) : (
-                  <li style={{ padding: '8px 12px', fontSize: '13px', color: '#718096' }}>
-                    No se encontraron clientes coincidentes
-                  </li>
+                  <li style={{ padding: '6px 10px', fontSize: '12px', color: '#718096' }}>No encontrado</li>
                 )}
               </ul>
             )}
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Nombre Cliente</label>
-            <input type="text" placeholder="Nombre completo" required value={nuevaActividad.nombre_cliente} onChange={e => setNuevaActividad({...nuevaActividad, nombre_cliente: e.target.value})} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff' }} />
+            <label style={{ fontSize: '11px', fontWeight: 'bold' }}>Nombre Cliente</label>
+            <input type="text" placeholder="Nombre completo" required value={nuevaActividad.nombre_cliente} onChange={e => setNuevaActividad({...nuevaActividad, nombre_cliente: e.target.value})} style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', fontSize: '12px' }} />
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Zona / Barrio</label>
-            <input type="text" placeholder="Ej: SEVILLA REAL" required value={nuevaActividad.zona} onChange={e => setNuevaActividad({...nuevaActividad, zona: e.target.value})} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff' }} />
+            <label style={{ fontSize: '11px', fontWeight: 'bold' }}>Zona / Barrio</label>
+            <input type="text" placeholder="Ej: SEVILLA" required value={nuevaActividad.zona} onChange={e => setNuevaActividad({...nuevaActividad, zona: e.target.value})} style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', fontSize: '12px' }} />
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Dirección</label>
-            <input type="text" placeholder="Dirección cliente" required value={nuevaActividad.direccion} onChange={e => setNuevaActividad({...nuevaActividad, direccion: e.target.value})} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff' }} />
+            <label style={{ fontSize: '11px', fontWeight: 'bold' }}>Dirección</label>
+            <input type="text" placeholder="Dirección" required value={nuevaActividad.direccion} onChange={e => setNuevaActividad({...nuevaActividad, direccion: e.target.value})} style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', fontSize: '12px' }} />
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Teléfono</label>
-            <input type="text" placeholder="Teléfono" value={nuevaActividad.telefono} onChange={e => setNuevaActividad({...nuevaActividad, telefono: e.target.value})} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff' }} />
+            <label style={{ fontSize: '11px', fontWeight: 'bold' }}>Teléfono</label>
+            <input type="text" placeholder="Teléfono" value={nuevaActividad.telefono} onChange={e => setNuevaActividad({...nuevaActividad, telefono: e.target.value})} style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', fontSize: '12px' }} />
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Descripción</label>
-            <input type="text" placeholder="Ej: FALLA DE INTERNET" value={nuevaActividad.descripcion} onChange={e => setNuevaActividad({...nuevaActividad, descripcion: e.target.value})} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff' }} />
+            <label style={{ fontSize: '11px', fontWeight: 'bold' }}>Descripción</label>
+            <input type="text" placeholder="Detalles..." value={nuevaActividad.descripcion} onChange={e => setNuevaActividad({...nuevaActividad, descripcion: e.target.value})} style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', fontSize: '12px' }} />
           </div>
 
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Asignado A</label>
-            <input type="text" placeholder="Ej: DOUGLAS / TODOS" required value={nuevaActividad.asignado_a} onChange={e => setNuevaActividad({...nuevaActividad, asignado_a: e.target.value})} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff' }} />
+            <label style={{ fontSize: '11px', fontWeight: 'bold' }}>Asignado A</label>
+            <input type="text" placeholder="Ej: DOUGLAS" required value={nuevaActividad.asignado_a} onChange={e => setNuevaActividad({...nuevaActividad, asignado_a: e.target.value})} style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff', fontSize: '12px' }} />
           </div>
 
-          <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+          <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
             {editandoId && (
-              <button type="button" onClick={cancelarEdicion} style={{ background: '#718096', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+              <button type="button" onClick={cancelarEdicion} style={{ background: '#718096', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}>
                 ❌ Cancelar
               </button>
             )}
-            <button type="submit" className="btn-primary" style={{ background: editandoId ? '#dd6b20' : '#3182ce' }}>
-              {editandoId ? '💾 Actualizar Actividad' : '➕ Registrar en Cronograma'}
+            <button type="submit" style={{ background: editandoId ? '#dd6b20' : '#3182ce', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}>
+              {editandoId ? '💾 Actualizar' : '➕ Registrar'}
             </button>
           </div>
         </form>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '15px', background: '#f1f5f9', padding: '12px 15px', borderRadius: '8px' }}>
-          <h3 style={{ margin: 0, fontSize: '16px', color: '#2d3748' }}>📋 Listado de Actividades Registradas</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '12px', background: '#f1f5f9', padding: '10px 12px', borderRadius: '8px' }}>
+          <h3 style={{ margin: 0, fontSize: '14px', color: '#2d3748' }}>📋 Listado de Actividades Registradas</h3>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            
-            <div style={{ background: '#fff', padding: '6px 10px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #cbd5e0' }}>
-              <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#4a5568' }}>🔍 Buscar:</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <div style={{ background: '#fff', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #cbd5e0' }}>
+              <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#4a5568' }}>🔍</label>
               <input 
                 type="text" 
-                placeholder="Filtrar en tabla..." 
+                placeholder="Filtrar tabla..." 
                 value={filtroGeneral} 
                 onChange={(e) => setFiltroGeneral(e.target.value)} 
-                style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff' }} 
+                style={{ padding: '3px 4px', borderRadius: '4px', border: '1px solid #cbd5e0', fontSize: '12px', width: '120px' }} 
               />
               {filtroGeneral && (
-                <button 
-                  onClick={() => setFiltroGeneral('')} 
-                  style={{ background: '#718096', color: '#fff', border: 'none', padding: '4px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
-                >
-                  ✕
-                </button>
+                <button onClick={() => setFiltroGeneral('')} style={{ background: '#718096', color: '#fff', border: 'none', padding: '2px 5px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>✕</button>
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e0' }}>
-              <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#4a5568' }}>Filtrar por Fecha:</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fff', padding: '4px 8px', borderRadius: '6px', border: '1px solid #cbd5e0' }}>
+              <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#4a5568' }}>Fecha:</label>
               <input 
                 type="date" 
                 value={filtroFecha} 
                 onChange={handleFiltroChange} 
-                style={{ padding: '4px 6px', borderRadius: '4px', border: '1px solid #cbd5e0', background: '#fff' }} 
+                style={{ padding: '3px 4px', borderRadius: '4px', border: '1px solid #cbd5e0', fontSize: '12px' }} 
               />
               {filtroFecha && (
-                <button 
-                  onClick={() => { setFiltroFecha(''); consultarCronograma(''); }} 
-                  style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '5px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
-                >
-                  Limpiar
-                </button>
+                <button onClick={() => { setFiltroFecha(''); consultarCronograma(''); }} style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '3px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>Limpiar</button>
               )}
             </div>
-
           </div>
         </div>
 
-        <div className="table-container">
+        {/* TABLA COMPACTA Y SIN SCROLL FORZADO */}
+        <div style={{ width: '100%', overflowX: 'auto' }}>
           {cronogramaOrdenado.length === 0 ? (
             <div className="empty-state">
               <p>No se encontraron actividades que coincidan con la búsqueda o el filtro de fecha.</p>
             </div>
           ) : (
-            <table className="table">
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', minWidth: '900px' }}>
               <thead>
-                <tr style={{ background: '#00b4d8', color: '#fff' }}>
-                  <th onClick={() => ordenarCronogramaPor('prioridad')} style={{ cursor: 'pointer', userSelect: 'none' }}>PRIORIDAD {obtenerFlechaCronograma('prioridad')}</th>
-                  <th onClick={() => ordenarCronogramaPor('estado')} style={{ cursor: 'pointer', userSelect: 'none' }}>ESTADO {obtenerFlechaCronograma('estado')}</th>
-                  <th onClick={() => ordenarCronogramaPor('fecha')} style={{ cursor: 'pointer', userSelect: 'none' }}>FECHA {obtenerFlechaCronograma('fecha')}</th>
-                  <th onClick={() => ordenarCronogramaPor('tipo')} style={{ cursor: 'pointer', userSelect: 'none' }}>TIPO {obtenerFlechaCronograma('tipo')}</th>
-                  <th onClick={() => ordenarCronogramaPor('zona')} style={{ cursor: 'pointer', userSelect: 'none' }}>ZONA {obtenerFlechaCronograma('zona')}</th>
-                  <th onClick={() => ordenarCronogramaPor('direccion')} style={{ cursor: 'pointer', userSelect: 'none' }}>DIRECCIÓN {obtenerFlechaCronograma('direccion')}</th>
-                  <th onClick={() => ordenarCronogramaPor('nombre_cliente')} style={{ cursor: 'pointer', userSelect: 'none' }}>NOMBRE CLIENTE {obtenerFlechaCronograma('nombre_cliente')}</th>
-                  <th onClick={() => ordenarCronogramaPor('telefono')} style={{ cursor: 'pointer', userSelect: 'none' }}>TELÉFONO {obtenerFlechaCronograma('telefono')}</th>
-                  <th onClick={() => ordenarCronogramaPor('descripcion')} style={{ cursor: 'pointer', userSelect: 'none' }}>DESCRIPCIÓN {obtenerFlechaCronograma('descripcion')}</th>
-                  <th onClick={() => ordenarCronogramaPor('asignado_a')} style={{ cursor: 'pointer', userSelect: 'none' }}>ASIGNADO A {obtenerFlechaCronograma('asignado_a')}</th>
-                  <th style={{ textAlign: 'center' }}>ACCIONES</th>
+                <tr style={{ background: '#00b4d8', color: '#fff', textAlign: 'left' }}>
+                  <th onClick={() => ordenarCronogramaPor('prioridad')} style={{ padding: '8px', cursor: 'pointer' }}>PRIORIDAD {obtenerFlechaCronograma('prioridad')}</th>
+                  <th onClick={() => ordenarCronogramaPor('estado')} style={{ padding: '8px', cursor: 'pointer' }}>ESTADO {obtenerFlechaCronograma('estado')}</th>
+                  <th onClick={() => ordenarCronogramaPor('fecha')} style={{ padding: '8px', cursor: 'pointer' }}>FECHA {obtenerFlechaCronograma('fecha')}</th>
+                  <th onClick={() => ordenarCronogramaPor('tipo')} style={{ padding: '8px', cursor: 'pointer' }}>TIPO {obtenerFlechaCronograma('tipo')}</th>
+                  <th onClick={() => ordenarCronogramaPor('zona')} style={{ padding: '8px', cursor: 'pointer' }}>ZONA {obtenerFlechaCronograma('zona')}</th>
+                  <th onClick={() => ordenarCronogramaPor('direccion')} style={{ padding: '8px', cursor: 'pointer' }}>DIRECCIÓN {obtenerFlechaCronograma('direccion')}</th>
+                  <th onClick={() => ordenarCronogramaPor('nombre_cliente')} style={{ padding: '8px', cursor: 'pointer' }}>CLIENTE {obtenerFlechaCronograma('nombre_cliente')}</th>
+                  <th onClick={() => ordenarCronogramaPor('telefono')} style={{ padding: '8px', cursor: 'pointer' }}>TELÉFONO {obtenerFlechaCronograma('telefono')}</th>
+                  <th onClick={() => ordenarCronogramaPor('descripcion')} style={{ padding: '8px', cursor: 'pointer' }}>DESCRIPCIÓN {obtenerFlechaCronograma('descripcion')}</th>
+                  <th onClick={() => ordenarCronogramaPor('asignado_a')} style={{ padding: '8px', cursor: 'pointer' }}>ASIGNADO {obtenerFlechaCronograma('asignado_a')}</th>
+                  <th style={{ padding: '8px', textAlign: 'center' }}>ACCIONES</th>
                 </tr>
               </thead>
               <tbody>
                 {cronogramaOrdenado.map((item) => {
                   const estadoActual = (item.estado || 'PENDIENTE').toUpperCase();
                   return (
-                    <tr key={item.id} style={{ background: editandoId === item.id ? '#feebc8' : 'transparent' }}>
-                      <td><span style={{ background: '#bee3f8', color: '#2b6cb0', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>{item.prioridad || 0}</span></td>
+                    <tr key={item.id} style={{ borderBottom: '1px solid #edf2f7', background: editandoId === item.id ? '#feebc8' : 'transparent' }}>
+                      <td style={{ padding: '8px' }}><span style={{ background: '#bee3f8', color: '#2b6cb0', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{item.prioridad || 0}</span></td>
                       
-                      {/* SELECTOR DE ESTADO EN EL PANEL PRINCIPAL */}
-                      <td>
+                      <td style={{ padding: '8px' }}>
                         <select
                           value={estadoActual}
                           onChange={(e) => handleCambiarEstadoAdmin(item.id, e.target.value)}
                           style={{
-                            padding: '5px 8px',
-                            borderRadius: '6px',
+                            padding: '4px 6px',
+                            borderRadius: '4px',
                             border: '1px solid #cbd5e0',
                             fontWeight: 'bold',
-                            fontSize: '12px',
+                            fontSize: '11px',
                             background: 
                               estadoActual === 'REALIZADO' ? '#c6f6d5' : 
                               estadoActual === 'POSPUESTO' ? '#feebc8' : 
@@ -731,26 +717,26 @@ function AdminPanel() {
                         </select>
                       </td>
 
-                      <td>{item.fecha ? item.fecha.split('T')[0] : ''}</td>
-                      <td><b>{item.tipo}</b></td>
-                      <td><span className="badge-barrio">{item.zona}</span></td>
-                      <td>📍 {item.direccion}</td>
-                      <td><b>{item.nombre_cliente}</b></td>
-                      <td>
+                      <td style={{ padding: '8px' }}>{item.fecha ? item.fecha.split('T')[0] : ''}</td>
+                      <td style={{ padding: '8px' }}><b>{item.tipo}</b></td>
+                      <td style={{ padding: '8px' }}><span className="badge-barrio">{item.zona}</span></td>
+                      <td style={{ padding: '8px' }}>📍 {item.direccion}</td>
+                      <td style={{ padding: '8px' }}><b>{item.nombre_cliente}</b></td>
+                      <td style={{ padding: '8px' }}>
                         <a href={`tel:${item.telefono}`} className="phone-link">📞 {item.telefono || 'N/A'}</a>
                       </td>
-                      <td>{item.descripcion}</td>
-                      <td><span className="badge-tecnico">{item.asignado_a}</span></td>
-                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '8px' }}>{item.descripcion}</td>
+                      <td style={{ padding: '8px' }}><span className="badge-tecnico">{item.asignado_a}</span></td>
+                      <td style={{ padding: '8px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                         <button 
                           onClick={() => iniciarEdicion(item)} 
-                          style={{ background: '#d69e2e', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginRight: '5px', fontSize: '11px' }}
+                          style={{ background: '#d69e2e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginRight: '4px', fontSize: '11px' }}
                         >
                           ✏️ Editar
                         </button>
                         <button 
                           onClick={() => eliminarActividad(item.id)} 
-                          style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px' }}
+                          style={{ background: '#e53e3e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px' }}
                         >
                           🗑️ Eliminar
                         </button>
@@ -774,7 +760,5 @@ function AdminPanel() {
         </Link>
       </div>
     </div>
-    
   );
-  
 }
