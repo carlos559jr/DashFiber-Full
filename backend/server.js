@@ -55,34 +55,27 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
     }
 });
 
-// Ruta para traer los clientes de WispHub con logs de depuración
+// Ruta para traer los clientes de WispHub de forma totalmente segura
 app.get('/api/wisphub/clientes', async (req, res) => {
     try {
         const buscar = req.query.q || ''; 
         if (!buscar.trim()) {
-            console.log('⚠️ Búsqueda vacía recibida.');
             return res.json({ success: true, data: [] });
         }
 
         console.log(`🔍 [WispHub Search] Buscando término: "${buscar}"`);
 
-        // Consultamos a WispHub en paralelo usando tanto nombre__contains como apellido__contains
+        // Consultamos a WispHub en paralelo usando nombre__contains y apellido__contains
         const [resNombre, resApellido] = await Promise.all([
             axios.get(WISP_CLIENTES, {
                 params: { limit: 500, nombre__contains: buscar },
                 headers: { 'Authorization': `Api-Key ${WISP_API_TOKEN}`, 'Content-Type': 'application/json' }
-            }).catch((err) => {
-                console.error('❌ Error en búsqueda por nombre:', err.message);
-                return { data: [] };
-            }),
+            }).catch(() => ({ data: [] })),
             
             axios.get(WISP_CLIENTES, {
                 params: { limit: 500, apellido__contains: buscar },
                 headers: { 'Authorization': `Api-Key ${WISP_API_TOKEN}`, 'Content-Type': 'application/json' }
-            }).catch((err) => {
-                console.error('❌ Error en búsqueda por apellido:', err.message);
-                return { data: [] };
-            })
+            }).catch(() => ({ data: [] }))
         ]);
 
         const listaNombre = resNombre.data.results || resNombre.data || [];
@@ -90,13 +83,12 @@ app.get('/api/wisphub/clientes', async (req, res) => {
 
         console.log(`📊 Resultados obtenidos -> Por Nombre: ${listaNombre.length} | Por Apellido: ${listaApellido.length}`);
 
-        // Unimos ambas listas y eliminamos duplicados usando un Map basado en el ID del cliente
+        // Unimos ambas listas y eliminamos duplicados usando cualquier identificador disponible o el contenido completo
         const mapaClientes = new Map();
-        [...listaNombre, ...listaApellido].forEach(cli => {
-            const idCli = cli.id || cli.id_cliente;
-            if (idCli) {
-                mapaClientes.set(idCli, cli);
-            }
+        [...listaNombre, ...listaApellido].forEach((cli) => {
+            // Buscamos cualquier campo de ID posible, y si no existe ninguno, usamos el objeto en texto como llave única
+            const identificadorUnico = cli.id || cli.id_cliente || cli.id_servicio || JSON.stringify(cli);
+            mapaClientes.set(identificadorUnico, cli);
         });
 
         const clientesFinales = Array.from(mapaClientes.values());
