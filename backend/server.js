@@ -55,25 +55,29 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
     }
 });
 
-// Ruta para traer los clientes de WispHub de forma totalmente segura
+// Ruta para traer los clientes de WispHub con filtrado inteligente por nombre completo
 app.get('/api/wisphub/clientes', async (req, res) => {
     try {
-        const buscar = req.query.q || ''; 
-        if (!buscar.trim()) {
+        const buscar = (req.query.q || '').trim(); 
+        if (!buscar) {
             return res.json({ success: true, data: [] });
         }
 
         console.log(`🔍 [WispHub Search] Buscando término: "${buscar}"`);
 
-        // Consultamos a WispHub en paralelo usando nombre__contains y apellido__contains
+        // Dividimos la búsqueda por espacios por si escriben "Nombre Apellido"
+        const partes = buscar.split(/\s+/);
+        const terminoPrincipal = partes[0]; // Tomamos la primera palabra para buscar en WispHub
+
+        // Consultamos a WispHub usando la primera palabra para asegurar que traiga los registros base
         const [resNombre, resApellido] = await Promise.all([
             axios.get(WISP_CLIENTES, {
-                params: { limit: 500, nombre__contains: buscar },
+                params: { limit: 500, nombre__contains: terminoPrincipal },
                 headers: { 'Authorization': `Api-Key ${WISP_API_TOKEN}`, 'Content-Type': 'application/json' }
             }).catch(() => ({ data: [] })),
             
             axios.get(WISP_CLIENTES, {
-                params: { limit: 500, apellido__contains: buscar },
+                params: { limit: 500, apellido__contains: terminoPrincipal },
                 headers: { 'Authorization': `Api-Key ${WISP_API_TOKEN}`, 'Content-Type': 'application/json' }
             }).catch(() => ({ data: [] }))
         ]);
@@ -81,18 +85,28 @@ app.get('/api/wisphub/clientes', async (req, res) => {
         const listaNombre = resNombre.data.results || resNombre.data || [];
         const listaApellido = resApellido.data.results || resApellido.data || [];
 
-        console.log(`📊 Resultados obtenidos -> Por Nombre: ${listaNombre.length} | Por Apellido: ${listaApellido.length}`);
+        // Unimos ambas listas de forma segura
+        const todosLosClientes = [...listaNombre, ...listaApellido];
 
-        // Unimos ambas listas y eliminamos duplicados usando cualquier identificador disponible o el contenido completo
+        // Filtramos en memoria para soportar nombres completos o múltiples palabras (ej: "Adriana Molina")
+        const clientesFiltrados = todosLosClientes.filter(cli => {
+            const nombre = (cli.nombre || cli.nombres || '').toLowerCase();
+            const apellido = (cli.apellido || cli.apellidos || '').toLowerCase();
+            const completo = `${nombre} ${apellido}`;
+            
+            // Verificamos que CADA palabra escrita por el usuario esté contenida en el registro del cliente
+            return partes.every(part => completo.includes(part.toLowerCase()));
+        });
+
+        // Eliminamos duplicados
         const mapaClientes = new Map();
-        [...listaNombre, ...listaApellido].forEach((cli) => {
-            // Buscamos cualquier campo de ID posible, y si no existe ninguno, usamos el objeto en texto como llave única
+        clientesFiltrados.forEach((cli) => {
             const identificadorUnico = cli.id || cli.id_cliente || cli.id_servicio || JSON.stringify(cli);
             mapaClientes.set(identificadorUnico, cli);
         });
 
         const clientesFinales = Array.from(mapaClientes.values());
-        console.log(`✅ Total de clientes únicos a retornar: ${clientesFinales.length}`);
+        console.log(`✅ Total de clientes únicos filtrados a retornar: ${clientesFinales.length}`);
 
         res.json({ success: true, data: clientesFinales });
 
