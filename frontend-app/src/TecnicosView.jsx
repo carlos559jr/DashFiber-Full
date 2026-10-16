@@ -40,16 +40,16 @@ export default function TecnicosView() {
     }
   };
 
-  useEffect(() => {
-    const fechaHoy = obtenerFechaHoy();
-    consultarCronogramaTecnicos(fechaHoy);
-
-    const intervalo = setInterval(() => {
-      consultarCronogramaTecnicos(filtroFecha, true);
-    }, 300000);
-
-    return () => clearInterval(intervalo);
-  }, [filtroFecha]);
+    useEffect(() => {
+      consultarWispHub();
+      consultarCronograma(filtroFecha); // <--- Usamos filtroFecha para que respete tu selección
+  
+      const intervalo = setInterval(() => {
+        consultarCronograma(filtroFecha);
+      }, 300000); 
+  
+      return () => clearInterval(intervalo);
+    }, [filtroFecha]);
 
   const handleFiltroFechaChange = (e) => {
     const fecha = e.target.value;
