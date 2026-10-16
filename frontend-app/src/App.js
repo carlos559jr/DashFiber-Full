@@ -284,9 +284,9 @@ function AdminPanel() {
   };
 
   const handleFiltroChange = (e) => {
-    const fecha = e.target.value;
-    setFiltroFecha(fecha);
-    consultarCronograma(fecha);
+    const nuevaFecha = e.target.value;
+    setFiltroFecha(nuevaFecha);
+    consultarCronograma(nuevaFecha); // Forzamos la consulta al backend con la fecha seleccionada
   };
 
   const ordenarPor = (campo) => {

@@ -78,7 +78,7 @@ app.get('/api/wisphub/clientes', async (req, res) => {
     }
 });
 
-// Ruta para obtener el cronograma (con soporte para filtrar por fecha exacta)
+// Ruta para obtener el cronograma (con soporte seguro para filtrar por fecha exacta)
 app.get('/api/cronograma', async (req, res) => {
     try {
         const { fecha } = req.query;
@@ -86,8 +86,9 @@ app.get('/api/cronograma', async (req, res) => {
         let values = [];
 
         if (fecha) {
-            query += ' WHERE fecha = $1';
-            values.push(fecha);
+            // Usamos CAST para comparar solo la fecha sin importar si la columna es timestamp o date
+            query += ' WHERE fecha::text LIKE $1';
+            values.push(`${fecha}%`);
         }
 
         query += ' ORDER BY prioridad ASC, fecha DESC, id DESC';
