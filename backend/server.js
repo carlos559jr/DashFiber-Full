@@ -63,8 +63,6 @@ app.get('/api/wisphub/clientes', async (req, res) => {
             return res.json({ success: true, data: [] });
         }
 
-        console.log(`🔍 [WispHub Search] Buscando término: "${buscar}"`);
-
         // Dividimos la búsqueda por espacios por si escriben "Nombre Apellido"
         const partes = buscar.split(/\s+/);
         const terminoPrincipal = partes[0]; // Tomamos la primera palabra para buscar en WispHub
@@ -106,12 +104,10 @@ app.get('/api/wisphub/clientes', async (req, res) => {
         });
 
         const clientesFinales = Array.from(mapaClientes.values());
-        console.log(`✅ Total de clientes únicos filtrados a retornar: ${clientesFinales.length}`);
 
         res.json({ success: true, data: clientesFinales });
 
     } catch (error) {
-        console.error('🔥 Error crítico al obtener los clientes:', error.message);
         res.status(500).json({ success: false, error: 'Error al consultar clientes' });
     }
 });
