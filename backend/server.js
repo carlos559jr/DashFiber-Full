@@ -59,8 +59,10 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
 // Ruta para traer los tickets pendientes de WispHub usando el estado correcto y mapeando los datos anidados
 app.get('/api/wisphub/tickets', async (req, res) => {
     try {
+        console.log("🎫 [WispHub Tickets] Consultando tickets con estado 'Nuevo'...");
+
         const response = await axios.get(WISP_TICKETS_URL, {
-            params: { limit: 50, offset: 0, estado: 'Nuevo' },
+            params: { limit: 50, offset: 0, estado: 'Nuevo' }, // Usamos 'Nuevo' tal como viene en el JSON de WispHub
             headers: { 
                 'Authorization': `Api-Key ${WISP_API_TOKEN}`,
                 'Content-Type': 'application/json'
@@ -68,9 +70,11 @@ app.get('/api/wisphub/tickets', async (req, res) => {
         });
 
         const listaTickets = response.data.results || response.data;
+        console.log(`📊 Tickets obtenidos con éxito: ${Array.isArray(listaTickets) ? listaTickets.length : 0}`);
 
         const ticketsFormateados = listaTickets.map(item => ({
             id: item.id_ticket || item.id,
+            // Extraemos los datos del objeto anidado 'servicio' o de las propiedades directas
             localidad: item.servicio?.localidad || item.localidad || 'Sin barrio',
             direccion: item.servicio?.direccion || item.direccion || 'Sin dirección',
             nombre: item.servicio?.nombre || item.nombre || 'Sin nombre',
@@ -83,7 +87,7 @@ app.get('/api/wisphub/tickets', async (req, res) => {
         res.json({ success: true, data: ticketsFormateados });
 
     } catch (error) {
-        console.error("Error al consultar tickets en WispHub:", error.response?.data || error.message);
+        console.error("🔥 Error al consultar tickets en WispHub:", error.response?.data || error.message);
         res.status(500).json({ success: false, message: 'Error al conectar con WispHub para obtener tickets' });
     }
 });
