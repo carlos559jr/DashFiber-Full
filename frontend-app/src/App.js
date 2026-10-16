@@ -587,9 +587,8 @@ function AdminPanel() {
                         <td style={{ padding: '12px' }}><span className="badge-barrio">{item.localidad || 'SIN BARRIO'}</span></td>
                         <td style={{ padding: '12px' }}>📍 {item.direccion || 'SIN DIRECCIÓN'}</td>
                         <td style={{ padding: '12px' }}><b>{item.nombre || 'SIN NOMBRE'}</b></td>
-                        <td style={{ padding: '12px' }}>📞 <a href={`tel:${item.telefono}`} className="phone-link">📞 {item.telefono || 'SIN TELEFONO'}</a></td>
+                        <td style={{ padding: '12px' }}>📞 <a href={`tel:${item.telefono}`} className="phone-link"> {item.telefono || 'SIN'}</a></td>
                         <td style={{ padding: '12px' }}>⚡ {item.fechaTicket}</td>
-                        <td style={{ padding: '12px' }}><span className="badge-tecnico">{item.tecnico || 'POR ASIGNAR'}</span></td>
                         <td style={{ padding: '12px', textAlign: 'center' }}>
                           <button 
                             onClick={() => enviarTicketAlCronograma(item)}
