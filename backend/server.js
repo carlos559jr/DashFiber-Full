@@ -64,8 +64,6 @@ app.get('/api/wisphub/clientes', async (req, res) => {
             return res.json({ success: true, data: [] });
         }
 
-        console.log(`🔍 [WispHub Search] Buscando término: "${buscar}"`);
-
         const partes = buscar.split(/\s+/);
         const terminoPrincipal = partes[0];
 
@@ -115,7 +113,6 @@ app.get('/api/wisphub/clientes', async (req, res) => {
         });
 
         const clientesFinales = Array.from(mapaClientes.values());
-        console.log(`✅ Total de clientes únicos filtrados a retornar: ${clientesFinales.length}`);
 
         res.json({ success: true, data: clientesFinales });
 
