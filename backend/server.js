@@ -76,12 +76,12 @@ app.get('/api/wisphub/tickets', async (req, res) => {
 
         const ticketsFormateados = ticketsNuevos.map(item => ({
             id: item.id_ticket || item.id,
-            localidad: item.servicio?.localidad || item.localidad || 'Sin barrio',
-            direccion: item.servicio?.direccion || item.direccion || 'Sin dirección',
-            nombre: item.servicio?.nombre || item.nombre || 'Sin nombre',
+            localidad: (item.servicio?.localidad || item.localidad || 'Sin barrio').toUpperCase(),
+            direccion: (item.servicio?.direccion || item.direccion || 'Sin dirección').toUpperCase(),
+            nombre: (item.servicio?.nombre || item.nombre || 'Sin nombre').toUpperCase(),
             telefono: item.servicio?.telefono || item.telefono || 'Sin teléfono',
-            asunto: item.asunto || item.titulo || 'Soporte / Ticket',
-            tecnico: item.tecnico || 'Por asignar',
+            asunto: (item.asunto || item.titulo || 'Soporte / Ticket').toUpperCase(), // <-- Asunto en mayúsculas
+            tecnico: (item.tecnico || 'Por asignar').toUpperCase(),
             fechaTicket: item.fecha_estimada_inicio || item.fecha_creacion || 'Por programar'
         }));
 

@@ -573,10 +573,10 @@ function AdminPanel() {
                   <thead>
                     <tr style={{ background: '#edf2f7', color: '#2d3748', textAlign: 'left' }}>
                       <th onClick={() => ordenarTicketsPor('localidad')} style={{ padding: '12px', cursor: 'pointer' }}>BARRIO {obtenerFlechaTickets('localidad')}</th>
-                      <th onClick={() => ordenarTicketsPor('nombre')} style={{ padding: '12px', cursor: 'pointer' }}>CLIENTE {obtenerFlechaTickets('nombre')}</th>
-                      <th onClick={() => ordenarTicketsPor('asunto')} style={{ padding: '12px', cursor: 'pointer' }}>ASUNTO {obtenerFlechaTickets('asunto')}</th>
-                      <th onClick={() => ordenarTicketsPor('fechaTicket')} style={{ padding: '12px', cursor: 'pointer' }}>FECHA ESTIMADA {obtenerFlechaTickets('fechaTicket')}</th>
-                      <th onClick={() => ordenarTicketsPor('tecnico')} style={{ padding: '12px', cursor: 'pointer' }}>TÉCNICO {obtenerFlechaTickets('tecnico')}</th>
+                      <th onClick={() => ordenarTicketsPor('direccion')} style={{ padding: '12px', cursor: 'pointer' }}>DIRECCIÓN {obtenerFlechaTickets('direccion')}</th>
+                      <th onClick={() => ordenarTicketsPor('nombre')} style={{ padding: '12px', cursor: 'pointer' }}>NOMBRE CLIENTE {obtenerFlechaTickets('nombre')}</th>
+                      <th onClick={() => ordenarTicketsPor('telefono')} style={{ padding: '12px', cursor: 'pointer' }}>TELÉFONO {obtenerFlechaTickets('telefono')}</th>
+                      <th onClick={() => ordenarTicketsPor('fechaTicket')} style={{ padding: '12px', cursor: 'pointer' }}>FECHA {obtenerFlechaTickets('fechaTicket')}</th>
                       <th style={{ padding: '12px', textAlign: 'center' }}>ACCIÓN</th>
                     </tr>
                   </thead>
@@ -584,10 +584,10 @@ function AdminPanel() {
                     {ticketsActuales.map((item, index) => (
                       <tr key={item.id || index} style={{ borderBottom: '1px solid #edf2f7' }}>
                         <td style={{ padding: '12px' }}><span className="badge-barrio">{item.localidad || 'Sin barrio'}</span></td>
+                        <td style={{ padding: '12px' }}>{item.direccion || 'Sin dirección'}</td>
                         <td style={{ padding: '12px' }}><b>{item.nombre || 'Sin nombre'}</b></td>
-                        <td style={{ padding: '12px' }}>{item.asunto || 'Sin asunto'}</td>
+                        <td style={{ padding: '12px' }}>{item.telefono || 'Sin teléfono'}</td>
                         <td style={{ padding: '12px' }}>⚡ {item.fechaTicket}</td>
-                        <td style={{ padding: '12px' }}><span className="badge-tecnico">{item.tecnico || 'Por asignar'}</span></td>
                         <td style={{ padding: '12px', textAlign: 'center' }}>
                           <button 
                             onClick={() => enviarTicketAlCronograma(item)}
@@ -614,7 +614,7 @@ function AdminPanel() {
             )}
           </div>
         </div>
-
+        
         {/* SECCIÓN 2: CRONOGRAMA DE ACTIVIDADES Y MANTENIMIENTOS */}
         <div className="card" style={{ width: '100%' }}>
           
