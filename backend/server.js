@@ -56,72 +56,48 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
     }
 });
 
-/// Ruta para traer los clientes de WispHub con depuración detallada del JSON
-app.get('/api/wisphub/clientes', async (req, res) => {
+// Ruta para traer los tickets pendientes de WispHub con depuración
+app.get('/api/wisphub/tickets', async (req, res) => {
     try {
-        const buscar = (req.query.q || '').trim(); 
-        if (!buscar) {
-            return res.json({ success: true, data: [] });
-        }
+        console.log("🎫 [WispHub Tickets] Consultando tickets pendientes...");
 
-        const partes = buscar.split(/\s+/);
-        const terminoPrincipal = partes[0];
-
-        // Consultamos a WispHub
-        const [resNombre, resApellido] = await Promise.all([
-            axios.get(WISP_CLIENTES, {
-                params: { limit: 500, nombre__contains: terminoPrincipal },
-                headers: { 'Authorization': `Api-Key ${WISP_API_TOKEN}`, 'Content-Type': 'application/json' }
-            }).catch((err) => {
-                console.error('❌ Error en axios nombre:', err.message);
-                return { data: [] };
-            }),
-            
-            axios.get(WISP_CLIENTES, {
-                params: { limit: 500, apellido__contains: terminoPrincipal },
-                headers: { 'Authorization': `Api-Key ${WISP_API_TOKEN}`, 'Content-Type': 'application/json' }
-            }).catch((err) => {
-                console.error('❌ Error en axios apellido:', err.message);
-                return { data: [] };
-            })
-        ]);
-
-        const listaNombre = resNombre.data.results || resNombre.data || [];
-        const listaApellido = resApellido.data.results || resApellido.data || [];
-
-        // IMPRIME EN CONSOLA EL JSON CRUDO DEL PRIMER RESULTADO PARA VER SU ESTRUCTURA
-        if (listaNombre.length > 0) {
-            console.log('📦 JSON de ejemplo (Nombre):', JSON.stringify(listaNombre[0], null, 2));
-        } else if (listaApellido.length > 0) {
-            console.log('📦 JSON de ejemplo (Apellido):', JSON.stringify(listaApellido[0], null, 2));
-        }
-
-        const todosLosClientes = [...listaNombre, ...listaApellido];
-
-        const clientesFiltrados = todosLosClientes.filter(cli => {
-            const nombre = (cli.nombre || cli.nombres || '').toLowerCase();
-            const apellido = (cli.apellido || cli.apellidos || '').toLowerCase();
-            const completo = `${nombre} ${apellido}`;
-            
-            return partes.every(part => completo.includes(part.toLowerCase()));
+        const response = await axios.get(WISP_TICKETS_URL, {
+            params: { limit: 50, offset: 0, estado: 'nuevo' }, 
+            headers: { 
+                'Authorization': `Api-Key ${WISP_API_TOKEN}`,
+                'Content-Type': 'application/json'
+            }
         });
 
-        const mapaClientes = new Map();
-        clientesFiltrados.forEach((cli) => {
-            const identificadorUnico = cli.id || cli.id_cliente || cli.id_servicio || JSON.stringify(cli);
-            mapaClientes.set(identificadorUnico, cli);
-        });
+        const listaTickets = response.data.results || response.data;
+        console.log(`📊 Tickets totales obtenidos de WispHub: ${Array.isArray(listaTickets) ? listaTickets.length : 'No es un arreglo'}`);
 
-        const clientesFinales = Array.from(mapaClientes.values());
+        // Imprime el JSON del primer ticket para ver su estructura exacta en la consola
+        if (Array.isArray(listaTickets) && listaTickets.length > 0) {
+            console.log("📦 JSON de ejemplo (Ticket):", JSON.stringify(listaTickets[0], null, 2));
+        } else {
+            console.log("⚠️ La respuesta de tickets vino vacía o con una estructura diferente:", JSON.stringify(response.data, null, 2));
+        }
 
-        res.json({ success: true, data: clientesFinales });
+        const ticketsFormateados = listaTickets.map(item => ({
+            id: item.id || item.id_ticket,
+            localidad: item.localidad || item.localidad_nombre || item.barrio || 'Sin barrio',
+            direccion: item.direccion || item.cliente?.direccion || 'Sin dirección',
+            nombre: item.nombre || item.cliente?.nombre || item.cliente_nombre || 'Sin nombre',
+            telefono: item.telefono || item.cliente?.telefono || 'Sin teléfono',
+            asunto: item.asunto || item.titulo || 'Soporte / Ticket',
+            tecnico: item.tecnico?.nombre || item.tecnico || 'Por asignar',
+            fechaTicket: item.fecha_creacion || item.fecha || 'Por programar'
+        }));
+
+        console.log(`✅ Tickets formateados a devolver: ${ticketsFormateados.length}`);
+        res.json({ success: true, data: ticketsFormateados });
 
     } catch (error) {
-        console.error('🔥 Error crítico al obtener los clientes:', error.message);
-        res.status(500).json({ success: false, error: 'Error al consultar clientes' });
+        console.error("🔥 Error al consultar tickets en WispHub:", error.response?.data || error.message);
+        res.status(500).json({ success: false, message: 'Error al conectar con WispHub para obtener tickets' });
     }
 });
-
 // Ruta para traer los clientes de WispHub con filtrado inteligente por nombre completo
 app.get('/api/wisphub/clientes', async (req, res) => {
     try {
