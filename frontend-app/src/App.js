@@ -126,12 +126,8 @@ function AdminPanel() {
     return () => clearTimeout(delayDebounceFn);
   }, [textoBusquedaCliente]);
 
-  const clientesFiltrados = clientesWisp.filter(cli => {
-    const nombre = (cli.nombre || cli.nombre_completo || '').toLowerCase();
-    const zona = (cli.localidad || cli.barrio || '').toLowerCase();
-    const query = textoBusquedaCliente.toLowerCase();
-    return nombre.includes(query) || zona.includes(query);
-  });
+  // Como el backend ya devuelve los clientes filtrados y listos, usamos directamente clientesWisp
+  const clientesFiltrados = clientesWisp;
 
   const seleccionarClienteWisp = (clienteEncontrado) => {
     const nombreCli = clienteEncontrado.nombre || clienteEncontrado.nombre_completo || '';
