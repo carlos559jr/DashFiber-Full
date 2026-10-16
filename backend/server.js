@@ -56,13 +56,11 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
     }
 });
 
-// Ruta para traer los tickets pendientes de WispHub con depuración
+// Ruta para traer los tickets pendientes de WispHub usando el estado correcto y mapeando los datos anidados
 app.get('/api/wisphub/tickets', async (req, res) => {
     try {
-        console.log("🎫 [WispHub Tickets] Consultando tickets pendientes...");
-
         const response = await axios.get(WISP_TICKETS_URL, {
-            params: { limit: 50, offset: 0, }, 
+            params: { limit: 50, offset: 0, estado: 'Nuevo' },
             headers: { 
                 'Authorization': `Api-Key ${WISP_API_TOKEN}`,
                 'Content-Type': 'application/json'
@@ -70,34 +68,26 @@ app.get('/api/wisphub/tickets', async (req, res) => {
         });
 
         const listaTickets = response.data.results || response.data;
-        console.log(`📊 Tickets totales obtenidos de WispHub: ${Array.isArray(listaTickets) ? listaTickets.length : 'No es un arreglo'}`);
-
-        // Imprime el JSON del primer ticket para ver su estructura exacta en la consola
-        if (Array.isArray(listaTickets) && listaTickets.length > 0) {
-            console.log("📦 JSON de ejemplo (Ticket):", JSON.stringify(listaTickets[0], null, 2));
-        } else {
-            console.log("⚠️ La respuesta de tickets vino vacía o con una estructura diferente:", JSON.stringify(response.data, null, 2));
-        }
 
         const ticketsFormateados = listaTickets.map(item => ({
-            id: item.id || item.id_ticket,
-            localidad: item.localidad || item.localidad_nombre || item.barrio || 'Sin barrio',
-            direccion: item.direccion || item.cliente?.direccion || 'Sin dirección',
-            nombre: item.nombre || item.cliente?.nombre || item.cliente_nombre || 'Sin nombre',
-            telefono: item.telefono || item.cliente?.telefono || 'Sin teléfono',
+            id: item.id_ticket || item.id,
+            localidad: item.servicio?.localidad || item.localidad || 'Sin barrio',
+            direccion: item.servicio?.direccion || item.direccion || 'Sin dirección',
+            nombre: item.servicio?.nombre || item.nombre || 'Sin nombre',
+            telefono: item.servicio?.telefono || item.telefono || 'Sin teléfono',
             asunto: item.asunto || item.titulo || 'Soporte / Ticket',
-            tecnico: item.tecnico?.nombre || item.tecnico || 'Por asignar',
-            fechaTicket: item.fecha_creacion || item.fecha || 'Por programar'
+            tecnico: item.tecnico || 'Por asignar',
+            fechaTicket: item.fecha_estimada_inicio || item.fecha_creacion || 'Por programar'
         }));
 
-        console.log(`✅ Tickets formateados a devolver: ${ticketsFormateados.length}`);
         res.json({ success: true, data: ticketsFormateados });
 
     } catch (error) {
-        console.error("🔥 Error al consultar tickets en WispHub:", error.response?.data || error.message);
+        console.error("Error al consultar tickets en WispHub:", error.response?.data || error.message);
         res.status(500).json({ success: false, message: 'Error al conectar con WispHub para obtener tickets' });
     }
 });
+
 // Ruta para traer los clientes de WispHub con filtrado inteligente por nombre completo
 app.get('/api/wisphub/clientes', async (req, res) => {
     try {
