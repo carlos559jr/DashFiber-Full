@@ -62,7 +62,7 @@ app.get('/api/wisphub/tickets', async (req, res) => {
         console.log("🎫 [WispHub Tickets] Consultando tickets pendientes...");
 
         const response = await axios.get(WISP_TICKETS_URL, {
-            params: { limit: 50, offset: 0, estado: 'nuevo' }, 
+            params: { limit: 50, offset: 0, }, 
             headers: { 
                 'Authorization': `Api-Key ${WISP_API_TOKEN}`,
                 'Content-Type': 'application/json'
