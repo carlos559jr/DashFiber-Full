@@ -577,7 +577,6 @@ function AdminPanel() {
                       <th onClick={() => ordenarTicketsPor('nombre')} style={{ padding: '12px', cursor: 'pointer' }}>NOMBRE CLIENTE {obtenerFlechaTickets('nombre')}</th>
                       <th onClick={() => ordenarTicketsPor('telefono')} style={{ padding: '12px', cursor: 'pointer' }}>TELÉFONO {obtenerFlechaTickets('telefono')}</th>
                       <th onClick={() => ordenarTicketsPor('fechaTicket')} style={{ padding: '12px', cursor: 'pointer' }}>FECHA {obtenerFlechaTickets('fechaTicket')}</th>
-                      <th onClick={() => ordenarTicketsPor('tecnico')} style={{ padding: '12px', cursor: 'pointer' }}>TÉCNICO {obtenerFlechaTickets('tecnico')}</th>
                       <th style={{ padding: '12px', textAlign: 'center' }}>ACCIÓN</th>
                     </tr>
                   </thead>
