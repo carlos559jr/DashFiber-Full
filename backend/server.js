@@ -55,23 +55,42 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
     }
 });
 
-// Ruta para traer los clientes de WispHub
+// Ruta para traer los clientes de WispHub buscando por nombre y apellido en paralelo
 app.get('/api/wisphub/clientes', async (req, res) => {
     try {
         const buscar = req.query.q || ''; 
-        const response = await axios.get(WISP_CLIENTES, {
-            params: { 
-                limit: 1000, 
-                nombre__contains: buscar 
-            }, 
-            headers: { 
-                'Authorization': `Api-Key ${WISP_API_TOKEN}`,
-                'Content-Type': 'application/json'
+        if (!buscar.trim()) {
+            return res.json({ success: true, data: [] });
+        }
+
+        // Consultamos a WispHub en paralelo usando tanto nombre__contains como apellido__contains
+        const [resNombre, resApellido] = await Promise.all([
+            axios.get(WISP_CLIENTES, {
+                params: { limit: 500, nombre__contains: buscar },
+                headers: { 'Authorization': `Api-Key ${WISP_API_TOKEN}`, 'Content-Type': 'application/json' }
+            }).catch(() => ({ data: [] })),
+            
+            axios.get(WISP_CLIENTES, {
+                params: { limit: 500, apellido__contains: buscar },
+                headers: { 'Authorization': `Api-Key ${WISP_API_TOKEN}`, 'Content-Type': 'application/json' }
+            }).catch(() => ({ data: [] }))
+        ]);
+
+        const listaNombre = resNombre.data.results || resNombre.data || [];
+        const listaApellido = resApellido.data.results || resApellido.data || [];
+
+        // Unimos ambas listas y eliminamos duplicados usando un Map basado en el ID del cliente
+        const mapaClientes = new Map();
+        [...listaNombre, ...listaApellido].forEach(cli => {
+            const idCli = cli.id || cli.id_cliente;
+            if (idCli) {
+                mapaClientes.set(idCli, cli);
             }
         });
 
-        const clientes = response.data.results || response.data;
-        res.json({ success: true, data: clientes });
+        const clientesFinales = Array.from(mapaClientes.values());
+        res.json({ success: true, data: clientesFinales });
+
     } catch (error) {
         console.error('Error al obtener los clientes:', error.message);
         res.status(500).json({ success: false, error: 'Error al consultar clientes' });
