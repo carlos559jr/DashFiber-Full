@@ -200,7 +200,7 @@ function AdminPanel() {
       nombre_cliente: item.nombre || '',
       telefono: item.telefono || '',
       descripcion: `${item.asunto || 'Soporte técnico'}`,
-      asignado_a: item.tecnico || '',
+      asignado_a: '',
       prioridad: 1
     });
     setTextoBusquedaCliente(item.nombre || '');
