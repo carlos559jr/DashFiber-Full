@@ -11,6 +11,7 @@ app.use(cors());
 const WISP_API_TOKEN = "LV4cqkWk.Q75LCb5TdjjavsjU4Kth0Nqem20Ki27c";
 const WISP_CLIENTES_URL = "https://api.wisphub.app/api/instalaciones/";
 const WISP_CLIENTES = "https://api.wisphub.app/api/clientes/";
+const WISP_TICKETS_URL = "https://api.wisphub.app/api/tickets/";
 
 // Configuración de la base de datos PostgreSQL (Supabase)
 const pool = new Pool({
@@ -52,6 +53,37 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
     } catch (error) {
         console.error("Error al consultar WispHub:", error.response?.data || error.message);
         res.status(500).json({ success: false, message: 'Error al conectar con WispHub' });
+    }
+});
+
+// Ruta para traer los tickets pendientes de WispHub
+app.get('/api/wisphub/tickets', async (req, res) => {
+    try {
+        const response = await axios.get(WISP_TICKETS_URL, {
+            params: { limit: 50, offset: 0, estado: 'nuevo' }, // Ajusta el filtro de estado según la API de WispHub
+            headers: { 
+                'Authorization': `Api-Key ${WISP_API_TOKEN}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const listaTickets = response.data.results || response.data;
+
+        const ticketsFormateados = listaTickets.map(item => ({
+            id: item.id || item.id_ticket,
+            localidad: item.localidad || item.localidad_nombre || item.barrio || 'Sin barrio',
+            direccion: item.direccion || item.cliente?.direccion || 'Sin dirección',
+            nombre: item.nombre || item.cliente?.nombre || item.cliente_nombre || 'Sin nombre',
+            telefono: item.telefono || item.cliente?.telefono || 'Sin teléfono',
+            asunto: item.asunto || item.titulo || 'Soporte / Ticket',
+            tecnico: item.tecnico?.nombre || item.tecnico || 'Por asignar',
+            fechaTicket: item.fecha_creacion || item.fecha || 'Por programar'
+        }));
+
+        res.json({ success: true, data: ticketsFormateados });
+    } catch (error) {
+        console.error("Error al consultar tickets en WispHub:", error.response?.data || error.message);
+        res.status(500).json({ success: false, message: 'Error al conectar con WispHub para obtener tickets' });
     }
 });
 

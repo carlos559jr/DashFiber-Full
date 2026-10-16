@@ -19,6 +19,10 @@ function AdminPanel() {
   const [instalaciones, setInstalaciones] = useState([]);
   const [loadingWisp, setLoadingWisp] = useState(false);
   const [errorWisp, setErrorWisp] = useState('');
+
+  const [tickets, setTickets] = useState([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
+  const [errorTickets, setErrorTickets] = useState('');
   
   const [paginaActual, setPaginaActual] = useState(1);
   const elementosPorPagina = 5;
@@ -73,6 +77,22 @@ function AdminPanel() {
     }
   };
 
+  const consultarTicketsWisp = async () => {
+    setLoadingTickets(true);
+    setErrorTickets('');
+    try {
+      const response = await axios.get('https://dashfiber-backend.onrender.com/api/wisphub/tickets');
+      if (response.data.success) {
+        setTickets(response.data.data);
+      }
+    } catch (err) {
+      setErrorTickets('No se pudo conectar con el servidor backend para los tickets.');
+      console.error(err);
+    } finally {
+      setLoadingTickets(false);
+    }
+  };
+
   const consultarCronograma = async (fechaFiltro = '') => {
     try {
       const url = fechaFiltro 
@@ -90,6 +110,7 @@ function AdminPanel() {
  // Carga inicial y configuración del intervalo de sincronización automática (cada 5 minutos)
   useEffect(() => {
     consultarWispHub();
+    consultarTicketsWisp();
     consultarCronograma(filtroFecha); // <--- Usamos filtroFecha para que respete tu selección
 
     const intervalo = setInterval(() => {
@@ -125,6 +146,23 @@ function AdminPanel() {
 
     return () => clearTimeout(delayDebounceFn);
   }, [textoBusquedaCliente]);
+
+  const enviarTicketAlCronograma = (item) => {
+    setNuevaActividad({
+      fecha: fechaHoy,
+      tipo: 'SOPORTE', // O el tipo que prefieras para los tickets
+      zona: item.localidad || '',
+      direccion: item.direccion || '',
+      nombre_cliente: item.nombre || '',
+      telefono: item.telefono || '',
+      descripcion: `TICKET: ${item.asunto || 'Soporte técnico'}`,
+      asignado_a: item.tecnico || '',
+      prioridad: 1
+    });
+    setTextoBusquedaCliente(item.nombre || '');
+    setEditandoId(null);
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  };
 
   // Como el backend ya devuelve los clientes filtrados y listos, usamos directamente clientesWisp
   const clientesFiltrados = clientesWisp;
@@ -462,6 +500,62 @@ function AdminPanel() {
                   </div>
                 </div>
               </>
+            )}
+          </div>
+        </div>
+
+        {/* SECCIÓN DE TICKETS PENDIENTES - WISPHUB */}
+        <div className="card" style={{ width: '100%' }}>
+          <div className="header">
+            <div>
+              <h2 className="title">🎫 Tickets Pendientes - WispHub</h2>
+              <p className="subtitle">Panel de control y gestión de tickets de soporte</p>
+            </div>
+            <button onClick={consultarTicketsWisp} disabled={loadingTickets} className="btn-primary">
+              {loadingTickets ? 'Sincronizando...' : '🔄 Sincronizar Tickets'}
+            </button>
+          </div>
+
+          {errorTickets && <div className="error-banner">{errorTickets}</div>}
+
+          <div style={{ width: '100%', overflowX: 'auto' }}>
+            {tickets.length === 0 && !loadingTickets ? (
+              <div className="empty-state">
+                <p>No hay tickets pendientes encontrados en este momento.</p>
+              </div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ background: '#edf2f7', color: '#2d3748', textAlign: 'left' }}>
+                    <th style={{ padding: '12px' }}>BARRIO</th>
+                    <th style={{ padding: '12px' }}>CLIENTE</th>
+                    <th style={{ padding: '12px' }}>ASUNTO / DETALLE</th>
+                    <th style={{ padding: '12px' }}>TELÉFONO</th>
+                    <th style={{ padding: '12px' }}>TÉCNICO</th>
+                    <th style={{ padding: '12px', textAlign: 'center' }}>ACCIÓN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tickets.map((item, index) => (
+                    <tr key={item.id || index} style={{ borderBottom: '1px solid #edf2f7' }}>
+                      <td style={{ padding: '12px' }}><span className="badge-barrio">{item.localidad || 'Sin barrio'}</span></td>
+                      <td style={{ padding: '12px' }}><b>{item.nombre || 'Sin nombre'}</b></td>
+                      <td style={{ padding: '12px' }}>{item.asunto || 'Sin asunto'}</td>
+                      <td style={{ padding: '12px' }}><a href={`tel:${item.telefono}`} className="phone-link">📞 {item.telefono || 'Sin teléfono'}</a></td>
+                      <td style={{ padding: '12px' }}><span className="badge-tecnico">{item.tecnico || 'Por asignar'}</span></td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        <button 
+                          onClick={() => enviarTicketAlCronograma(item)}
+                          title="Enviar Ticket al Cronograma"
+                          style={{ background: '#3182ce', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                        >
+                          📥 Enviar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
         </div>
