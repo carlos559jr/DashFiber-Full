@@ -55,29 +55,40 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
     }
 });
 
-// Ruta para traer los clientes de WispHub buscando por nombre y apellido en paralelo
+// Ruta para traer los clientes de WispHub con logs de depuración
 app.get('/api/wisphub/clientes', async (req, res) => {
     try {
         const buscar = req.query.q || ''; 
         if (!buscar.trim()) {
+            console.log('⚠️ Búsqueda vacía recibida.');
             return res.json({ success: true, data: [] });
         }
+
+        console.log(`🔍 [WispHub Search] Buscando término: "${buscar}"`);
 
         // Consultamos a WispHub en paralelo usando tanto nombre__contains como apellido__contains
         const [resNombre, resApellido] = await Promise.all([
             axios.get(WISP_CLIENTES, {
                 params: { limit: 500, nombre__contains: buscar },
                 headers: { 'Authorization': `Api-Key ${WISP_API_TOKEN}`, 'Content-Type': 'application/json' }
-            }).catch(() => ({ data: [] })),
+            }).catch((err) => {
+                console.error('❌ Error en búsqueda por nombre:', err.message);
+                return { data: [] };
+            }),
             
             axios.get(WISP_CLIENTES, {
                 params: { limit: 500, apellido__contains: buscar },
                 headers: { 'Authorization': `Api-Key ${WISP_API_TOKEN}`, 'Content-Type': 'application/json' }
-            }).catch(() => ({ data: [] }))
+            }).catch((err) => {
+                console.error('❌ Error en búsqueda por apellido:', err.message);
+                return { data: [] };
+            })
         ]);
 
         const listaNombre = resNombre.data.results || resNombre.data || [];
         const listaApellido = resApellido.data.results || resApellido.data || [];
+
+        console.log(`📊 Resultados obtenidos -> Por Nombre: ${listaNombre.length} | Por Apellido: ${listaApellido.length}`);
 
         // Unimos ambas listas y eliminamos duplicados usando un Map basado en el ID del cliente
         const mapaClientes = new Map();
@@ -89,10 +100,12 @@ app.get('/api/wisphub/clientes', async (req, res) => {
         });
 
         const clientesFinales = Array.from(mapaClientes.values());
+        console.log(`✅ Total de clientes únicos a retornar: ${clientesFinales.length}`);
+
         res.json({ success: true, data: clientesFinales });
 
     } catch (error) {
-        console.error('Error al obtener los clientes:', error.message);
+        console.error('🔥 Error crítico al obtener los clientes:', error.message);
         res.status(500).json({ success: false, error: 'Error al consultar clientes' });
     }
 });
