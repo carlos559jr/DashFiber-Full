@@ -25,7 +25,7 @@ function AdminPanel() {
   const [errorTickets, setErrorTickets] = useState('');
   const [paginaActualTickets, setPaginaActualTickets] = useState(1);
   const [ordenCampoTickets, setOrdenCampoTickets] = useState('fechaTicket');
-  const [ordenDireccionTickets, setOrdenDireccionTickets] = useState('asc');
+  const [ordenDireccionTickets, setOrdenDireccionTickets] = useState('desc');
   
   const [paginaActual, setPaginaActual] = useState(1);
   const elementosPorPagina = 5;
@@ -119,8 +119,10 @@ function AdminPanel() {
 
     if (typeof valorA === 'string') valorA = valorA.toLowerCase();
     if (typeof valorB === 'string') valorB = valorB.toLowerCase();
-    if (valorA < valorB) return ordenDireccionTickets === 'asc' ? -1 : 1;
-    if (valorA > valorB) return ordenDireccionTickets === 'asc' ? 1 : -1;
+
+    // Invertido: si es 'desc', los valores mayores van primero (-1)
+    if (valorA < valorB) return ordenDireccionTickets === 'desc' ? 1 : -1;
+    if (valorA > valorB) return ordenDireccionTickets === 'desc' ? -1 : 1;
     return 0;
   });
 
@@ -192,12 +194,12 @@ function AdminPanel() {
   const enviarTicketAlCronograma = (item) => {
     setNuevaActividad({
       fecha: fechaHoy,
-      tipo: 'SOPORTE', // O el tipo que prefieras para los tickets
+      tipo: 'MANTENIMIENTO',
       zona: item.localidad || '',
       direccion: item.direccion || '',
       nombre_cliente: item.nombre || '',
       telefono: item.telefono || '',
-      descripcion: `TICKET: ${item.asunto || 'Soporte técnico'}`,
+      descripcion: `${item.asunto || 'Soporte técnico'}`,
       asignado_a: item.tecnico || '',
       prioridad: 1
     });
