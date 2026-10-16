@@ -56,11 +56,11 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
     }
 });
 
-// Ruta para traer los tickets pendientes de WispHub filtrando en memoria
+// Ruta para traer los tickets pendientes de WispHub con la fecha estimada de inicio
 app.get('/api/wisphub/tickets', async (req, res) => {
     try {
         const response = await axios.get(WISP_TICKETS_URL, {
-            params: { limit: 100, offset: 0 }, // Traemos un lote general sin filtros de URL
+            params: { limit: 100, offset: 0 },
             headers: { 
                 'Authorization': `Api-Key ${WISP_API_TOKEN}`,
                 'Content-Type': 'application/json'
@@ -69,7 +69,6 @@ app.get('/api/wisphub/tickets', async (req, res) => {
 
         const listaTickets = response.data.results || response.data;
 
-        // Filtramos en memoria para evitar que la API rechace el parámetro de estado
         const ticketsNuevos = (Array.isArray(listaTickets) ? listaTickets : []).filter(item => {
             const estado = (item.estado || '').toLowerCase();
             return estado === 'nuevo' || estado === 'pendiente' || estado === 'abierto';
@@ -93,6 +92,7 @@ app.get('/api/wisphub/tickets', async (req, res) => {
         res.status(500).json({ success: false, message: 'Error al conectar con WispHub para obtener tickets' });
     }
 });
+
 // Ruta para traer los clientes de WispHub con filtrado inteligente por nombre completo
 app.get('/api/wisphub/clientes', async (req, res) => {
     try {

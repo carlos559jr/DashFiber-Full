@@ -23,6 +23,9 @@ function AdminPanel() {
   const [tickets, setTickets] = useState([]);
   const [loadingTickets, setLoadingTickets] = useState(false);
   const [errorTickets, setErrorTickets] = useState('');
+  const [paginaActualTickets, setPaginaActualTickets] = useState(1);
+  const [ordenCampoTickets, setOrdenCampoTickets] = useState('fechaTicket');
+  const [ordenDireccionTickets, setOrdenDireccionTickets] = useState('asc');
   
   const [paginaActual, setPaginaActual] = useState(1);
   const elementosPorPagina = 5;
@@ -84,12 +87,51 @@ function AdminPanel() {
       const response = await axios.get('https://dashfiber-backend.onrender.com/api/wisphub/tickets');
       if (response.data.success) {
         setTickets(response.data.data);
+        setPaginaActualTickets(1); // Reinicia a la página 1 al sincronizar
       }
     } catch (err) {
       setErrorTickets('No se pudo conectar con el servidor backend para los tickets.');
       console.error(err);
     } finally {
       setLoadingTickets(false);
+    }
+  };
+
+  const ordenarTicketsPor = (campo) => {
+    let direccion = 'asc';
+    if (ordenCampoTickets === campo && ordenDireccionTickets === 'asc') {
+      direccion = 'desc';
+    }
+    setOrdenCampoTickets(campo);
+    setOrdenDireccionTickets(direccion);
+    setPaginaActualTickets(1);
+  };
+
+  const obtenerFlechaTickets = (campo) => {
+    if (ordenCampoTickets !== campo) return ' ↕';
+    return ordenDireccionTickets === 'asc' ? ' ▲' : ' ▼';
+  };
+
+  const ticketsOrdenados = [...tickets].sort((a, b) => {
+    if (!ordenCampoTickets) return 0;
+    let valorA = a[ordenCampoTickets] || '';
+    let valorB = b[ordenCampoTickets] || '';
+
+    if (typeof valorA === 'string') valorA = valorA.toLowerCase();
+    if (typeof valorB === 'string') valorB = valorB.toLowerCase();
+    if (valorA < valorB) return ordenDireccionTickets === 'asc' ? -1 : 1;
+    if (valorA > valorB) return ordenDireccionTickets === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const indiceUltimoTicket = paginaActualTickets * 5; // Paginación de 5 en 5
+  const indicePrimerTicket = indiceUltimoTicket - 5;
+  const ticketsActuales = ticketsOrdenados.slice(indicePrimerTicket, indiceUltimoTicket);
+  const totalPaginasTickets = Math.ceil(tickets.length / 5);
+
+  const cambiarPaginaTickets = (nuevaPagina) => {
+    if (nuevaPagina >= 1 && nuevaPagina <= totalPaginasTickets) {
+      setPaginaActualTickets(nuevaPagina);
     }
   };
 
@@ -524,38 +566,49 @@ function AdminPanel() {
                 <p>No hay tickets pendientes encontrados en este momento.</p>
               </div>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                <thead>
-                  <tr style={{ background: '#edf2f7', color: '#2d3748', textAlign: 'left' }}>
-                    <th style={{ padding: '12px' }}>BARRIO</th>
-                    <th style={{ padding: '12px' }}>CLIENTE</th>
-                    <th style={{ padding: '12px' }}>ASUNTO / DETALLE</th>
-                    <th style={{ padding: '12px' }}>TELÉFONO</th>
-                    <th style={{ padding: '12px' }}>TÉCNICO</th>
-                    <th style={{ padding: '12px', textAlign: 'center' }}>ACCIÓN</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tickets.map((item, index) => (
-                    <tr key={item.id || index} style={{ borderBottom: '1px solid #edf2f7' }}>
-                      <td style={{ padding: '12px' }}><span className="badge-barrio">{item.localidad || 'Sin barrio'}</span></td>
-                      <td style={{ padding: '12px' }}><b>{item.nombre || 'Sin nombre'}</b></td>
-                      <td style={{ padding: '12px' }}>{item.asunto || 'Sin asunto'}</td>
-                      <td style={{ padding: '12px' }}><a href={`tel:${item.telefono}`} className="phone-link">📞 {item.telefono || 'Sin teléfono'}</a></td>
-                      <td style={{ padding: '12px' }}><span className="badge-tecnico">{item.tecnico || 'Por asignar'}</span></td>
-                      <td style={{ padding: '12px', textAlign: 'center' }}>
-                        <button 
-                          onClick={() => enviarTicketAlCronograma(item)}
-                          title="Enviar Ticket al Cronograma"
-                          style={{ background: '#3182ce', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
-                        >
-                          📥 Enviar
-                        </button>
-                      </td>
+              <>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <thead>
+                    <tr style={{ background: '#edf2f7', color: '#2d3748', textAlign: 'left' }}>
+                      <th onClick={() => ordenarTicketsPor('localidad')} style={{ padding: '12px', cursor: 'pointer' }}>BARRIO {obtenerFlechaTickets('localidad')}</th>
+                      <th onClick={() => ordenarTicketsPor('nombre')} style={{ padding: '12px', cursor: 'pointer' }}>CLIENTE {obtenerFlechaTickets('nombre')}</th>
+                      <th onClick={() => ordenarTicketsPor('asunto')} style={{ padding: '12px', cursor: 'pointer' }}>ASUNTO {obtenerFlechaTickets('asunto')}</th>
+                      <th onClick={() => ordenarTicketsPor('fechaTicket')} style={{ padding: '12px', cursor: 'pointer' }}>FECHA ESTIMADA {obtenerFlechaTickets('fechaTicket')}</th>
+                      <th onClick={() => ordenarTicketsPor('tecnico')} style={{ padding: '12px', cursor: 'pointer' }}>TÉCNICO {obtenerFlechaTickets('tecnico')}</th>
+                      <th style={{ padding: '12px', textAlign: 'center' }}>ACCIÓN</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {ticketsActuales.map((item, index) => (
+                      <tr key={item.id || index} style={{ borderBottom: '1px solid #edf2f7' }}>
+                        <td style={{ padding: '12px' }}><span className="badge-barrio">{item.localidad || 'Sin barrio'}</span></td>
+                        <td style={{ padding: '12px' }}><b>{item.nombre || 'Sin nombre'}</b></td>
+                        <td style={{ padding: '12px' }}>{item.asunto || 'Sin asunto'}</td>
+                        <td style={{ padding: '12px' }}>⚡ {item.fechaTicket}</td>
+                        <td style={{ padding: '12px' }}><span className="badge-tecnico">{item.tecnico || 'Por asignar'}</span></td>
+                        <td style={{ padding: '12px', textAlign: 'center' }}>
+                          <button 
+                            onClick={() => enviarTicketAlCronograma(item)}
+                            title="Enviar Ticket al Cronograma"
+                            style={{ background: '#3182ce', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                          >
+                            📥 Enviar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Controles de Paginación */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', padding: '0 5px' }}>
+                  <span style={{ fontSize: '14px', color: '#718096' }}>Página {paginaActualTickets} de {totalPaginasTickets || 1}</span>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={() => cambiarPaginaTickets(paginaActualTickets - 1)} disabled={paginaActualTickets === 1} style={{ padding: '8px 16px', backgroundColor: paginaActualTickets === 1 ? '#edf2f7' : '#3182ce', color: paginaActualTickets === 1 ? '#a0aec0' : '#ffffff', border: 'none', borderRadius: '6px', cursor: paginaActualTickets === 1 ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>Anterior</button>
+                    <button onClick={() => cambiarPaginaTickets(paginaActualTickets + 1)} disabled={paginaActualTickets === totalPaginasTickets || totalPaginasTickets === 0} style={{ padding: '8px 16px', backgroundColor: (paginaActualTickets === totalPaginasTickets || totalPaginasTickets === 0) ? '#edf2f7' : '#3182ce', color: (paginaActualTickets === totalPaginasTickets || totalPaginasTickets === 0) ? '#a0aec0' : '#ffffff', border: 'none', borderRadius: '6px', cursor: (paginaActualTickets === totalPaginasTickets || totalPaginas === 0) ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>Siguiente</button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>
