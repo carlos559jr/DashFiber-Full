@@ -87,17 +87,17 @@ function AdminPanel() {
     }
   };
 
-  // Carga inicial y configuración del intervalo de sincronización automática (cada 5 minutos)
+ // Carga inicial y configuración del intervalo de sincronización automática (cada 5 minutos)
   useEffect(() => {
     consultarWispHub();
-    consultarCronograma(fechaHoy);
+    consultarCronograma(filtroFecha); // <--- Usamos filtroFecha para que respete tu selección
 
     const intervalo = setInterval(() => {
       consultarCronograma(filtroFecha);
-    }, 300000); // 300000 ms = 5 minutos
+    }, 300000); 
 
     return () => clearInterval(intervalo);
-  }, [fechaHoy, filtroFecha]);
+  }, [filtroFecha]);
 
   useEffect(() => {
     if (textoBusquedaCliente.trim().length < 2) {
