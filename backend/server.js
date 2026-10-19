@@ -99,6 +99,7 @@ app.get('/api/wisphub/tickets', async (req, res) => {
 // ==========================================
 // 2. RUTA PARA CERRAR EL TICKET EN WISPHUB (NUEVA)
 // ==========================================
+// Ruta para cerrar un ticket en WispHub enviando la respuesta oficial por POST
 app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
     try {
         const { id_ticket_wisphub } = req.body;
@@ -107,30 +108,31 @@ app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
             return res.status(400).json({ success: false, message: 'No se proporcionó el ID del ticket.' });
         }
 
-        console.log(`🚀 [Backend] Intentando cerrar ticket #${id_ticket_wisphub} en WispHub...`);
-        const urlCierre = `${WISP_TICKETS_URL}${id_ticket_wisphub}/`;
+        console.log(`🚀 [Backend] Cerrando ticket #${id_ticket_wisphub} en WispHub mediante respuestas...`);
         
-        // Payload de prueba para cierre
-        const payloadCierre = {
-            estado: 'Cerrado', 
-            respuesta: 'REALIZADO'
-        };
+        // Endpoint oficial de respuestas según la documentación de WispHub
+        const urlRespuesta = `https://api.wisphub.net/api/tickets/${id_ticket_wisphub}/respuesta/`;
+        
+        // Parámetros obligatorios exigidos por la API de WispHub
+        const formData = new URLSearchParams();
+        formData.append('ticket-estado', '4');         // 4 = Cerrado
+        formData.append('ticket-prioridad', '2');     // 2 = Normal (o la prioridad que prefieras)
+        formData.append('ticket-falla', 'No Tiene Internet'); // Falla requerida por el esquema de WispHub
+        formData.append('respuesta', 'REALIZADO');    // Nota de cierre
 
-        const respuestaWisp = await axios.patch(urlCierre, payloadCierre, {
+        const respuestaWisp = await axios.post(urlRespuesta, formData, {
             headers: { 
                 'Authorization': `Api-Key ${WISP_API_TOKEN}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/x-www-form-urlencoded'
             }
         });
 
-        // IMPRIMIR LA RESPUESTA REAL DE WISPHUB EN LOS LOGS
-        console.log("📥 [WispHub Response Data]:", JSON.stringify(respuestaWisp.data, null, 2));
-
-        res.json({ success: true, message: `Petición enviada a WispHub para el ticket #${id_ticket_wisphub}` });
+        console.log(`✅ [Backend] Ticket #${id_ticket_wisphub} cerrado con éxito en WispHub.`);
+        res.json({ success: true, message: `Ticket #${id_ticket_wisphub} cerrado correctamente en WispHub.` });
 
     } catch (error) {
-        console.error("🔥 [Backend] Error de WispHub:", error.response?.data || error.message);
-        res.status(500).json({ success: false, message: 'Error al conectar con WispHub' });
+        console.error("🔥 [Backend] Error detallado de WispHub al cerrar ticket:", error.response?.data || error.message);
+        res.status(500).json({ success: false, message: 'Error al conectar con WispHub para cerrar el ticket.' });
     }
 });
 
