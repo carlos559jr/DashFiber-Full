@@ -253,7 +253,7 @@ app.get('/api/cronograma', async (req, res) => {
 // Ruta para crear una nueva actividad
 app.post('/api/cronograma', async (req, res) => {
     try {
-        const { fecha, tipo, zona, direccion, nombre_cliente, telefono, descripcion, asignado_a, prioridad, estado } = req.body;
+        const { fecha, tipo, zona, direccion, nombre_cliente, telefono, descripcion, asignado_a, prioridad, estado, id_ticket_wisphub } = req.body;
         
         const query = `
             INSERT INTO cronograma_actividades (fecha, tipo, zona, direccion, nombre_cliente, telefono, descripcion, asignado_a, prioridad, estado) 
@@ -271,7 +271,8 @@ app.post('/api/cronograma', async (req, res) => {
             descripcion, 
             asignado_a, 
             prioridad || 0,
-            estado || 'PENDIENTE'
+            estado || 'PENDIENTE',
+            id_ticket_wisphub
         ];
         
         const { rows } = await pool.query(query, values);
