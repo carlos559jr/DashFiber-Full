@@ -99,8 +99,9 @@ app.get('/api/wisphub/tickets', async (req, res) => {
 // ==========================================
 // 2. RUTA PARA CERRAR EL TICKET EN WISPHUB (NUEVA)
 // ==========================================
-// Ruta para cerrar un ticket en WispHub con registro detallado de la respuesta
-// Ruta para cerrar un ticket en WispHub usando FormData (multipart/form-data)
+const FormData = require('form-data'); // Asegúrate de tener este paquete instalado (npm install form-data)
+
+// Ruta para cerrar un ticket en WispHub usando el dominio .app y FormData
 app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
     try {
         const { id_ticket_wisphub } = req.body;
@@ -109,25 +110,27 @@ app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
             return res.status(400).json({ success: false, message: 'No se proporcionó el ID del ticket.' });
         }
 
-        console.log(`🚀 [Backend] Cerrando ticket #${id_ticket_wisphub} en WispHub con FormData...`);
+        console.log(`🚀 [Backend] Cerrando ticket #${id_ticket_wisphub} en WispHub (.app)...`);
         
-        const urlRespuesta = `https://api.wisphub.net/api/tickets/${id_ticket_wisphub}/respuesta/`;
+        // Usamos el dominio oficial .app tal como lo indicaste en el ejemplo
+        const urlRespuesta = `https://api.wisphub.app/api/tickets/${id_ticket_wisphub}/respuesta/`;
         
-        // Creamos un formulario multipart tal como lo exige la API de WispHub
+        // Creamos el formulario multipart nativo de la librería form-data
         const formData = new FormData();
         formData.append('ticket-estado', '4');                 // 4 = Cerrado[cite: 16]
         formData.append('ticket-prioridad', '2');             // 2 = Normal[cite: 16]
-        formData.append('ticket-falla', 'No Tiene Internet'); // Falla requerida por el esquema[cite: 15]
-        formData.append('respuesta', 'REALIZADO');            // Nota de cierre[cite: 15, 17]
+        formData.append('ticket-falla', 'No Tiene Internet'); // Falla requerida por la API[cite: 15]
+        formData.append('respuesta', 'REALIZADO');            // Texto de respuesta[cite: 15, 17]
 
         const respuestaWisp = await axios.post(urlRespuesta, formData, {
             headers: { 
                 'Authorization': `Api-Key ${WISP_API_TOKEN}`,
-                ...formData.getHeaders ? formData.getHeaders() : {} // Compatible con el entorno
+                ...formData.getHeaders() // Inyecta automáticamente los headers de multipart/form-data con su boundary
             }
         });
 
-        console.log(`📥 [WispHub RESPUESTA EXACTA]:`, JSON.stringify(respuestaWisp.data, null, 2));
+        // AQUÍ VERÁS LA RESPUESTA EXACTA DE 201 EN LOS LOGS DE RENDER
+        console.log(`📥 [WispHub RESPUESTA 201 JSON]:`, JSON.stringify(respuestaWisp.data, null, 2));
 
         res.json({ success: true, message: `Ticket #${id_ticket_wisphub} cerrado correctamente en WispHub.` });
 
