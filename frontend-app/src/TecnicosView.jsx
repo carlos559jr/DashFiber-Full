@@ -40,8 +40,7 @@ export default function TecnicosView() {
     }
   };
 
-useEffect(() => {
-    // Usamos directamente filtroFecha para que respete tanto el inicio como los cambios de fecha
+  useEffect(() => {
     consultarCronogramaTecnicos(filtroFecha);
 
     const intervalo = setInterval(() => {
@@ -57,11 +56,26 @@ useEffect(() => {
     consultarCronogramaTecnicos(fecha);
   };
 
+  const cerrarTicketEnWispHubSiExiste = async (idTicketWisphub) => {
+    if (!idTicketWisphub) return; // Si no tiene ID de ticket, no hace nada (es instalación o manual)
+
+    try {
+      const response = await axios.post('https://dashfiber-backend.onrender.com/api/wisphub/cerrar-ticket', {
+        id_ticket_wisphub: idTicketWisphub
+      });
+      if (response.data.success) {
+        console.log(`Ticket #${id_ticket_wisphub} cerrado en WispHub correctamente.`);
+      }
+    } catch (error) {
+      console.error("Error al intentar cerrar el ticket en WispHub:", error.response?.data || error.message);
+    }
+  };
+
   const handleCambiarEstado = (idActividad, nuevoEstado) => {
     if (nuevoEstado === 'POSPUESTO') {
       setIdActividadSeleccionada(idActividad);
       setNuevaFechaPospuesto(obtenerFechaHoy());
-      setComentarioPospuesto(''); // Limpiamos el comentario anterior
+      setComentarioPospuesto('');
       setModalPospuestoAbierto(true);
       return;
     }
@@ -71,6 +85,9 @@ useEffect(() => {
 
   const enviarActualizacionEstado = async (idActividad, nuevoEstado, fechaPospuesto, comentario) => {
     try {
+      // Encontramos la actividad actual para verificar si tiene id_ticket_wisphub
+      const actividadActual = cronograma.find(item => item.id === idActividad);
+
       setCronograma((prevCronograma) =>
         prevCronograma.map((item) =>
           item.id === idActividad 
@@ -90,6 +107,12 @@ useEffect(() => {
       }
 
       await axios.put(`https://dashfiber-backend.onrender.com/api/cronograma/${idActividad}/estado`, payload);
+
+      // Si el nuevo estado es REALIZADO y la actividad proviene de un ticket, lo cerramos en WispHub
+      if (nuevoEstado === 'REALIZADO' && actividadActual && actividadActual.id_ticket_wisphub) {
+        await cerrarTicketEnWispHubSiExiste(actividadActual.id_ticket_wisphub);
+      }
+
       consultarCronogramaTecnicos(filtroFecha);
     } catch (err) {
       console.error("Error al actualizar el estado:", err);
