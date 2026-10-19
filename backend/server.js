@@ -56,7 +56,9 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
     }
 });
 
-// Ruta para traer los tickets pendientes de WispHub con la fecha estimada de inicio
+// ==========================================
+// 1. RUTA PARA CONSULTAR LOS TICKETS PENDIENTES
+// ==========================================
 app.get('/api/wisphub/tickets', async (req, res) => {
     try {
         const response = await axios.get(WISP_TICKETS_URL, {
@@ -75,14 +77,14 @@ app.get('/api/wisphub/tickets', async (req, res) => {
         });
 
         const ticketsFormateados = ticketsNuevos.map(item => ({
-        id: item.id_ticket || item.id,
-        localidad: (item.servicio?.localidad || item.localidad || 'SIN BARRIO').toUpperCase(),
-        direccion: (item.servicio?.direccion || item.direccion || 'SIN DIRECCIÓN').toUpperCase(),
-        nombre: (item.servicio?.nombre || item.nombre || 'SIN NOMBRE').toUpperCase(),
-        telefono: item.servicio?.telefono || item.telefono || 'SIN TELÉFONO',
-        asunto: (item.asunto || item.titulo || 'SOPORTE / TICKET').toUpperCase(),
-        tecnico: (item.tecnico || 'POR ASIGNAR').toUpperCase(),
-        fechaTicket: formatearFecha(item.fecha_estimada_inicio || item.fecha_creacion) // <-- Aplicamos el formateador aquí
+            id: item.id_ticket || item.id,
+            localidad: (item.servicio?.localidad || item.localidad || 'SIN BARRIO').toUpperCase(),
+            direccion: (item.servicio?.direccion || item.direccion || 'SIN DIRECCIÓN').toUpperCase(),
+            nombre: (item.servicio?.nombre || item.nombre || 'SIN NOMBRE').toUpperCase(),
+            telefono: item.servicio?.telefono || item.telefono || 'SIN TELÉFONO',
+            asunto: (item.asunto || item.titulo || 'SOPORTE / TICKET').toUpperCase(),
+            tecnico: (item.tecnico || 'POR ASIGNAR').toUpperCase(),
+            fechaTicket: formatearFecha(item.fecha_estimada_inicio || item.fecha_creacion)
         }));
 
         res.json({ success: true, data: ticketsFormateados });
@@ -90,6 +92,53 @@ app.get('/api/wisphub/tickets', async (req, res) => {
     } catch (error) {
         console.error("Error al consultar tickets en WispHub:", error.response?.data || error.message);
         res.status(500).json({ success: false, message: 'Error al conectar con WispHub para obtener tickets' });
+    }
+});
+
+
+// ==========================================
+// 2. RUTA PARA CERRAR EL TICKET EN WISPHUB (NUEVA)
+// ==========================================
+app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
+    try {
+        const { id_ticket_wisphub } = req.body;
+        
+        // Validación estricta: si no viene el ID, detenemos la ejecución
+        if (!id_ticket_wisphub) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'No se proporcionó el ID del ticket de WispHub o la actividad no proviene de un ticket.' 
+            });
+        }
+
+        // URL del ticket específico en la API de WispHub
+        const urlCierre = `${WISP_TICKETS_URL}${id_ticket_wisphub}/`;
+        
+        // Payload para actualizar el estado a Cerrado y agregar la respuesta REALIZADO
+        const payloadCierre = {
+            estado: 'Cerrado', 
+            respuesta: 'REALIZADO'
+        };
+
+        // Petición PATCH para actualizar el ticket en WispHub
+        await axios.patch(urlCierre, payloadCierre, {
+            headers: { 
+                'Authorization': `Api-Key ${WISP_API_TOKEN}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        res.json({ 
+            success: true, 
+            message: `Ticket #${id_ticket_wisphub} cerrado exitosamente con la nota REALIZADO.` 
+        });
+
+    } catch (error) {
+        console.error("Error al cerrar ticket en WispHub:", error.response?.data || error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al conectar con WispHub para cerrar el ticket.' 
+        });
     }
 });
 

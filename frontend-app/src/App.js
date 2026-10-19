@@ -201,7 +201,8 @@ function AdminPanel() {
       telefono: item.telefono || '',
       descripcion: `${item.asunto || 'Soporte técnico'}`,
       asignado_a: '',
-      prioridad: 1
+      prioridad: 1,
+      id_ticket_wisphub: item.id
     });
     setTextoBusquedaCliente(item.nombre || '');
     setEditandoId(null);
