@@ -99,7 +99,7 @@ app.get('/api/wisphub/tickets', async (req, res) => {
 // ==========================================
 // 2. RUTA PARA CERRAR EL TICKET EN WISPHUB (NUEVA)
 // ==========================================
-// Ruta para cerrar un ticket en WispHub enviando la respuesta oficial por POST
+// Ruta para cerrar un ticket en WispHub con registro detallado de la respuesta
 app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
     try {
         const { id_ticket_wisphub } = req.body;
@@ -108,17 +108,15 @@ app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
             return res.status(400).json({ success: false, message: 'No se proporcionó el ID del ticket.' });
         }
 
-        console.log(`🚀 [Backend] Cerrando ticket #${id_ticket_wisphub} en WispHub mediante respuestas...`);
+        console.log(`🚀 [Backend] Intentando cerrar ticket #${id_ticket_wisphub} en WispHub...`);
         
-        // Endpoint oficial de respuestas según la documentación de WispHub
         const urlRespuesta = `https://api.wisphub.net/api/tickets/${id_ticket_wisphub}/respuesta/`;
         
-        // Parámetros obligatorios exigidos por la API de WispHub
         const formData = new URLSearchParams();
-        formData.append('ticket-estado', '4');         // 4 = Cerrado
-        formData.append('ticket-prioridad', '2');     // 2 = Normal (o la prioridad que prefieras)
-        formData.append('ticket-falla', 'No Tiene Internet'); // Falla requerida por el esquema de WispHub
-        formData.append('respuesta', 'REALIZADO');    // Nota de cierre
+        formData.append('ticket-estado', '4');         // 4 = Cerrado[cite: 16]
+        formData.append('ticket-prioridad', '2');     // 2 = Normal[cite: 16]
+        formData.append('ticket-falla', 'No Tiene Internet'); //[cite: 15]
+        formData.append('respuesta', 'REALIZADO');    //[cite: 15, 17]
 
         const respuestaWisp = await axios.post(urlRespuesta, formData, {
             headers: { 
@@ -127,11 +125,22 @@ app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
             }
         });
 
-        console.log(`✅ [Backend] Ticket #${id_ticket_wisphub} cerrado con éxito en WispHub.`);
-        res.json({ success: true, message: `Ticket #${id_ticket_wisphub} cerrado correctamente en WispHub.` });
+        // Imprimir la respuesta exacta de éxito en los logs de Render
+        console.log(`✅ [WispHub ÉXITO] Status:`, respuestaWisp.status);
+        console.log(`📥 [WispHub ÉXITO] Data:`, JSON.stringify(respuestaWisp.data, null, 2));
+
+        res.json({ success: true, message: `Ticket #${id_ticket_wisphub} procesado en WispHub.` });
 
     } catch (error) {
-        console.error("🔥 [Backend] Error detallado de WispHub al cerrar ticket:", error.response?.data || error.message);
+        // Imprimir el error detallado que arroja WispHub (aquí veremos el motivo exacto si la API lo rechaza)
+        console.error("🔥 [WispHub ERROR DETALLADO]:");
+        if (error.response) {
+            console.error("Status Code:", error.response.status);
+            console.error("Response Data:", JSON.stringify(error.response.data, null, 2));
+        } else {
+            console.error("Error Message:", error.message);
+        }
+        
         res.status(500).json({ success: false, message: 'Error al conectar con WispHub para cerrar el ticket.' });
     }
 });
