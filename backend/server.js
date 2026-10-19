@@ -324,7 +324,7 @@ app.put('/api/cronograma/:id', async (req, res) => {
     }
 });
 
-// RUTA ACTUALIZADA: Actualiza estado, fecha y adjunta el comentario/motivo de pospuesto si existe
+// RUTA ACTUALIZADA: Actualiza estado, fecha, adjunta comentario de pospuesto y cierra el ticket en WispHub si aplica
 app.put('/api/cronograma/:id/estado', async (req, res) => {
     try {
         const { id } = req.params;
@@ -367,7 +367,31 @@ app.put('/api/cronograma/:id/estado', async (req, res) => {
             return res.status(404).json({ success: false, message: 'Actividad no encontrada' });
         }
 
-        res.json({ success: true, message: 'Estado y fecha actualizados correctamente', data: rows[0] });
+        const actividadActualizada = rows[0];
+
+        // NUEVO: Si el estado cambia a REALIZADO y la actividad tiene un id_ticket_wisphub guardado, lo cerramos en WispHub
+        const estadoUpper = (estado || '').toUpperCase();
+        if (estadoUpper === 'REALIZADO' && actividadActualizada.id_ticket_wisphub) {
+            try {
+                console.log(`🚀 [Backend] Cerrando ticket #${actividadActualizada.id_ticket_wisphub} en WispHub...`);
+                const urlCierre = `${WISP_TICKETS_URL}${actividadActualizada.id_ticket_wisphub}/`;
+                
+                await axios.patch(urlCierre, {
+                    estado: 'Cerrado',
+                    respuesta: 'REALIZADO'
+                }, {
+                    headers: { 
+                        'Authorization': `Api-Key ${WISP_API_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log(`✅ [Backend] Ticket #${actividadActualizada.id_ticket_wisphub} cerrado con éxito en WispHub.`);
+            } catch (wispError) {
+                console.error("🔥 [Backend] Error al cerrar ticket en WispHub:", wispError.response?.data || wispError.message);
+            }
+        }
+
+        res.json({ success: true, message: 'Estado y fecha actualizados correctamente', data: actividadActualizada });
     } catch (error) {
         console.error("Error al actualizar estado:", error);
         res.status(500).json({ success: false, message: 'Error al actualizar el estado' });
