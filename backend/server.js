@@ -75,14 +75,14 @@ app.get('/api/wisphub/tickets', async (req, res) => {
         });
 
         const ticketsFormateados = ticketsNuevos.map(item => ({
-            id: item.id_ticket || item.id,
-            localidad: (item.servicio?.localidad || item.localidad || 'Sin barrio').toUpperCase(),
-            direccion: (item.servicio?.direccion || item.direccion || 'Sin dirección').toUpperCase(),
-            nombre: (item.servicio?.nombre || item.nombre || 'Sin nombre').toUpperCase(),
-            telefono: item.servicio?.telefono || item.telefono || 'Sin teléfono',
-            asunto: (item.asunto || item.titulo || 'Soporte / Ticket').toUpperCase(), // <-- Asunto en mayúsculas
-            tecnico: (item.tecnico || 'Por asignar').toUpperCase(),
-            fechaTicket: item.fecha_estimada_inicio || item.fecha_creacion || 'Por programar'
+        id: item.id_ticket || item.id,
+        localidad: (item.servicio?.localidad || item.localidad || 'SIN BARRIO').toUpperCase(),
+        direccion: (item.servicio?.direccion || item.direccion || 'SIN DIRECCIÓN').toUpperCase(),
+        nombre: (item.servicio?.nombre || item.nombre || 'SIN NOMBRE').toUpperCase(),
+        telefono: item.servicio?.telefono || item.telefono || 'SIN TELÉFONO',
+        asunto: (item.asunto || item.titulo || 'SOPORTE / TICKET').toUpperCase(),
+        tecnico: (item.tecnico || 'POR ASIGNAR').toUpperCase(),
+        fechaTicket: formatearFecha(item.fecha_estimada_inicio || item.fecha_creacion) // <-- Aplicamos el formateador aquí
         }));
 
         res.json({ success: true, data: ticketsFormateados });
@@ -149,6 +149,34 @@ app.get('/api/wisphub/clientes', async (req, res) => {
         res.status(500).json({ success: false, error: 'Error al consultar clientes' });
     }
 });
+
+// Función auxiliar para transformar de MM/DD/YYYY a DD-MM-YYYY
+const formatearFecha = (fechaStr) => {
+    if (!fechaStr) return 'POR PROGRAMAR';
+    
+    // Si viene en formato "MM/DD/YYYY HH:mm:ss"
+    const partes = fechaStr.split(' ');
+    if (partes.length > 0) {
+        const fechaPartes = partes[0].split('/');
+        if (fechaPartes.length === 3) {
+            const [mes, dia, anio] = fechaPartes;
+            return `${dia}-${mes}-${anio} ${partes[1] || ''}`.trim();
+        }
+        
+        // Si viene en formato ISO (ej. 2026-10-16T...)
+        if (fechaStr.includes('T')) {
+            const fechaIso = new Date(fechaStr);
+            if (!isNaN(fechaIso.getTime())) {
+                const dia = String(fechaIso.getDate()).padStart(2, '0');
+                const mes = String(fechaIso.getMonth() + 1).padStart(2, '0');
+                const anio = fechaIso.getFullYear();
+                const hora = fechaIso.toTimeString().split(' ')[0];
+                return `${dia}-${mes}-${anio} ${hora}`;
+            }
+        }
+    }
+    return fechaStr;
+};
 
 // Ruta para obtener el cronograma (con soporte seguro para filtrar por fecha exacta)
 app.get('/api/cronograma', async (req, res) => {
