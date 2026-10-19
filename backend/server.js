@@ -337,7 +337,7 @@ app.put('/api/cronograma/:id/estado', async (req, res) => {
                 const formData = new FormData();
                 formData.append('ticket-estado', '4');                 // 4 = Cerrado
                 formData.append('ticket-prioridad', '2');             // 2 = Normal
-                formData.append('ticket-falla', 'No Tiene Internet'); // Falla requerida por WispHub
+                formData.append('ticket-falla', 'Cerrado Desde App'); // Falla requerida por WispHub
                 formData.append('respuesta', 'REALIZADO');            // Texto de respuesta
 
                 const respuestaWisp = await axios.post(urlRespuesta, formData, {
