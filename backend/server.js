@@ -280,7 +280,6 @@ app.put('/api/cronograma/:id', async (req, res) => {
 // RUTA ACTUALIZADA: Actualiza estado, fecha, adjunta comentario de pospuesto y cierra el ticket en WispHub si aplica
 const FormData = require('form-data'); // Asegúrate de tener este paquete requerido arriba
 
-// RUTA COMPLETA: Mantiene la lógica de pospuesto y cierra el ticket en WispHub correctamente por POST
 app.put('/api/cronograma/:id/estado', async (req, res) => {
     try {
         const { id } = req.params;
@@ -290,7 +289,6 @@ app.put('/api/cronograma/:id/estado', async (req, res) => {
         let values;
 
         if (nuevaFecha) {
-            // Si se pospone, actualizamos estado, nueva fecha y concatenamos el comentario en la descripción
             query = `
                 UPDATE cronograma_actividades 
                 SET estado = $1, 
@@ -307,7 +305,6 @@ app.put('/api/cronograma/:id/estado', async (req, res) => {
             `;
             values = [estado, nuevaFecha, comentario || '', id];
         } else {
-            // Si cambia de estado normalmente sin modificar fecha
             query = `
                 UPDATE cronograma_actividades 
                 SET estado = $1 
@@ -325,30 +322,24 @@ app.put('/api/cronograma/:id/estado', async (req, res) => {
 
         const actividadActualizada = rows[0];
 
-        // NUEVO: Si el estado cambia a REALIZADO y la actividad tiene un id_ticket_wisphub guardado
         const estadoUpper = (estado || '').toUpperCase();
         if (estadoUpper === 'REALIZADO' && actividadActualizada.id_ticket_wisphub) {
             try {
-                console.log(`🚀 [Backend] Cerrando ticket #${actividadActualizada.id_ticket_wisphub} en WispHub (.app)...`);
-                
-                // Endpoint oficial con el dominio .app y método POST con FormData
                 const urlRespuesta = `https://api.wisphub.app/api/tickets/${actividadActualizada.id_ticket_wisphub}/respuesta/`;
                 
                 const formData = new FormData();
-                formData.append('ticket-estado', '4');                 // 4 = Cerrado
-                formData.append('ticket-prioridad', '2');             // 2 = Normal
-                formData.append('respuesta', 'REALIZADO');            // Texto de respuesta
+                formData.append('ticket-estado', '4');
+                formData.append('ticket-prioridad', '2');
+                formData.append('respuesta', 'REALIZADO');
 
-                const respuestaWisp = await axios.post(urlRespuesta, formData, {
+                await axios.post(urlRespuesta, formData, {
                     headers: { 
                         'Authorization': `Api-Key ${WISP_API_TOKEN}`,
                         ...formData.getHeaders()
                     }
                 });
-
-                console.log(`✅ [Backend] Ticket #${actividadActualizada.id_ticket_wisphub} cerrado con éxito en WispHub. Respuesta:`, JSON.stringify(respuestaWisp.data));
             } catch (wispError) {
-                console.error("🔥 [Backend] Error detallado al cerrar ticket en WispHub:", wispError.response?.data || wispError.message);
+                console.error("Error al cerrar ticket en WispHub:", wispError.response?.data || wispError.message);
             }
         }
 
