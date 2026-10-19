@@ -103,42 +103,34 @@ app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
     try {
         const { id_ticket_wisphub } = req.body;
         
-        // Validación estricta: si no viene el ID, detenemos la ejecución
         if (!id_ticket_wisphub) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'No se proporcionó el ID del ticket de WispHub o la actividad no proviene de un ticket.' 
-            });
+            return res.status(400).json({ success: false, message: 'No se proporcionó el ID del ticket.' });
         }
 
-        // URL del ticket específico en la API de WispHub
+        console.log(`🚀 [Backend] Intentando cerrar ticket #${id_ticket_wisphub} en WispHub...`);
         const urlCierre = `${WISP_TICKETS_URL}${id_ticket_wisphub}/`;
         
-        // Payload para actualizar el estado a Cerrado y agregar la respuesta REALIZADO
+        // Payload de prueba para cierre
         const payloadCierre = {
             estado: 'Cerrado', 
             respuesta: 'REALIZADO'
         };
 
-        // Petición PATCH para actualizar el ticket en WispHub
-        await axios.patch(urlCierre, payloadCierre, {
+        const respuestaWisp = await axios.patch(urlCierre, payloadCierre, {
             headers: { 
                 'Authorization': `Api-Key ${WISP_API_TOKEN}`,
                 'Content-Type': 'application/json'
             }
         });
 
-        res.json({ 
-            success: true, 
-            message: `Ticket #${id_ticket_wisphub} cerrado exitosamente con la nota REALIZADO.` 
-        });
+        // IMPRIMIR LA RESPUESTA REAL DE WISPHUB EN LOS LOGS
+        console.log("📥 [WispHub Response Data]:", JSON.stringify(respuestaWisp.data, null, 2));
+
+        res.json({ success: true, message: `Petición enviada a WispHub para el ticket #${id_ticket_wisphub}` });
 
     } catch (error) {
-        console.error("Error al cerrar ticket en WispHub:", error.response?.data || error.message);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Error al conectar con WispHub para cerrar el ticket.' 
-        });
+        console.error("🔥 [Backend] Error de WispHub:", error.response?.data || error.message);
+        res.status(500).json({ success: false, message: 'Error al conectar con WispHub' });
     }
 });
 
@@ -291,23 +283,17 @@ app.put('/api/cronograma/:id', async (req, res) => {
         
         const query = `
             UPDATE cronograma_actividades 
-            SET fecha = $1, tipo = $2, zona = $3, direccion = $4, nombre_cliente = $5, telefono = $6, descripcion = $7, asignado_a = $8, prioridad = $9, estado = $10, id_ticket_wisphub = $11
+            SET fecha = $1, tipo = $2, zona = $3, direccion = $4, nombre_cliente = $5, telefono = $6, descripcion = $7, asignado_a = $8, prioridad = $9, estado = $10,
+                id_ticket_wisphub = COALESCE($11, id_ticket_wisphub)
             WHERE id = $12
             RETURNING *;
         `;
         
         const values = [
-            fecha, 
-            tipo, 
-            zona, 
-            direccion, 
-            nombre_cliente, 
-            telefono, 
-            descripcion, 
-            asignado_a, 
+            fecha, tipo, zona, direccion, nombre_cliente, telefono, descripcion, asignado_a, 
             prioridad || 0, 
             estado || 'PENDIENTE', 
-            id_ticket_wisphub || null, // <-- Aseguramos que se actualice o mantenga el ID del ticket
+            id_ticket_wisphub || null, // Si viene nulo al editar, COALESCE mantiene el anterior
             id
         ];
         
