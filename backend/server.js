@@ -160,7 +160,7 @@ const formatearFecha = (fechaStr) => {
         const fechaPartes = partes[0].split('/');
         if (fechaPartes.length === 3) {
             const [mes, dia, anio] = fechaPartes;
-            return `${dia}-${mes}-${anio} ${partes[1] || ''}`.trim();
+            return `${dia}/${mes}/${anio} ${partes[1] || ''}`.trim();
         }
         
         // Si viene en formato ISO (ej. 2026-10-16T...)
