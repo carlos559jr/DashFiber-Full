@@ -85,8 +85,9 @@ export default function TecnicosView() {
 
   const enviarActualizacionEstado = async (idActividad, nuevoEstado, fechaPospuesto, comentario) => {
     try {
-      // Encontramos la actividad actual para verificar si tiene id_ticket_wisphub
+      // Buscamos la actividad actual para inspeccionar sus datos
       const actividadActual = cronograma.find(item => item.id === idActividad);
+      console.log("🔍 Actividad seleccionada al cambiar estado:", actividadActual);
 
       setCronograma((prevCronograma) =>
         prevCronograma.map((item) =>
@@ -108,9 +109,15 @@ export default function TecnicosView() {
 
       await axios.put(`https://dashfiber-backend.onrender.com/api/cronograma/${idActividad}/estado`, payload);
 
-      // Si el nuevo estado es REALIZADO y la actividad proviene de un ticket, lo cerramos en WispHub
+      // Verificamos las condiciones exactas antes de cerrar en WispHub
+      console.log("📌 Estado nuevo:", nuevoEstado);
+      console.log("📌 ID del ticket en WispHub:", actividadActual?.id_ticket_wisphub);
+
       if (nuevoEstado === 'REALIZADO' && actividadActual && actividadActual.id_ticket_wisphub) {
+        console.log("🚀 Disparando cierre de ticket en WispHub para el ID:", actividadActual.id_ticket_wisphub);
         await cerrarTicketEnWispHubSiExiste(actividadActual.id_ticket_wisphub);
+      } else {
+        console.log("⚠️ No se cerró en WispHub porque el estado no es REALIZADO o el id_ticket_wisphub está vacío/null.");
       }
 
       consultarCronogramaTecnicos(filtroFecha);
