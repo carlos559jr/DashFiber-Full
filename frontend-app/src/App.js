@@ -509,7 +509,6 @@ function AdminPanel() {
                       <th onClick={() => ordenarPor('nombre')} style={{ padding: '12px', cursor: 'pointer', userSelect: 'none' }}>NOMBRE CLIENTE {obtenerFlecha('nombre')}</th>
                       <th onClick={() => ordenarPor('telefono')} style={{ padding: '12px', cursor: 'pointer', userSelect: 'none' }}>TELÉFONO {obtenerFlecha('telefono')}</th>
                       <th onClick={() => ordenarPor('fechaInstalacion')} style={{ padding: '12px', cursor: 'pointer', userSelect: 'none' }}>INSTALACIÓN {obtenerFlecha('fechaInstalacion')}</th>
-                      <th onClick={() => ordenarPor('tecnico')} style={{ padding: '12px', cursor: 'pointer', userSelect: 'none' }}>TÉCNICO WISP {obtenerFlecha('tecnico')}</th>
                       <th style={{ padding: '12px', textAlign: 'center' }}>ACCIÓN</th>
                     </tr>
                   </thead>
@@ -521,7 +520,6 @@ function AdminPanel() {
                         <td style={{ padding: '12px' }}><b>{item.nombre || 'Sin nombre'}</b></td>
                         <td style={{ padding: '12px' }}><a href={`tel:${item.telefono}`} className="phone-link">📞 {item.telefono || 'Sin teléfono'}</a></td>
                         <td style={{ padding: '12px' }}>⚡ {item.fechaInstalacion}</td>
-                        <td style={{ padding: '12px' }}><span className="badge-tecnico">{item.tecnico || 'Por asignar'}</span></td>
                         <td style={{ padding: '12px', textAlign: 'center' }}>
                           <button 
                             onClick={() => enviarInstalacionAlCronograma(item)}
