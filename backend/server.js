@@ -108,7 +108,7 @@ app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
             return res.status(400).json({ success: false, message: 'No se proporcionó el ID del ticket.' });
         }
 
-        console.log(`🚀 [Backend] Intentando cerrar ticket #${id_ticket_wisphub} en WispHub...`);
+        console.log(`🚀 [Backend] Cerrando ticket #${id_ticket_wisphub} en WispHub...`);
         
         const urlRespuesta = `https://api.wisphub.net/api/tickets/${id_ticket_wisphub}/respuesta/`;
         
@@ -125,22 +125,13 @@ app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
             }
         });
 
-        // Imprimir la respuesta exacta de éxito en los logs de Render
-        console.log(`✅ [WispHub ÉXITO] Status:`, respuestaWisp.status);
-        console.log(`📥 [WispHub ÉXITO] Data:`, JSON.stringify(respuestaWisp.data, null, 2));
+        // IMPRIMIR LA RESPUESTA JSON COMPLETA DE WISPHUB EN LOS LOGS DE RENDER
+        console.log(`📥 [WispHub RESPUESTA EXACTA]:`, JSON.stringify(respuestaWisp.data, null, 2));
 
         res.json({ success: true, message: `Ticket #${id_ticket_wisphub} procesado en WispHub.` });
 
     } catch (error) {
-        // Imprimir el error detallado que arroja WispHub (aquí veremos el motivo exacto si la API lo rechaza)
-        console.error("🔥 [WispHub ERROR DETALLADO]:");
-        if (error.response) {
-            console.error("Status Code:", error.response.status);
-            console.error("Response Data:", JSON.stringify(error.response.data, null, 2));
-        } else {
-            console.error("Error Message:", error.message);
-        }
-        
+        console.error("🔥 [WispHub ERROR]:", error.response?.data || error.message);
         res.status(500).json({ success: false, message: 'Error al conectar con WispHub para cerrar el ticket.' });
     }
 });
