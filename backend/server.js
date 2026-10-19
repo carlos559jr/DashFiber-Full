@@ -257,7 +257,7 @@ app.post('/api/cronograma', async (req, res) => {
         
         const query = `
             INSERT INTO cronograma_actividades (fecha, tipo, zona, direccion, nombre_cliente, telefono, descripcion, asignado_a, prioridad, estado, id_ticket_wisphub) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
             RETURNING *;
         `;
         
@@ -287,16 +287,29 @@ app.post('/api/cronograma', async (req, res) => {
 app.put('/api/cronograma/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { fecha, tipo, zona, direccion, nombre_cliente, telefono, descripcion, asignado_a, prioridad, estado } = req.body;
+        const { fecha, tipo, zona, direccion, nombre_cliente, telefono, descripcion, asignado_a, prioridad, estado, id_ticket_wisphub } = req.body;
         
         const query = `
             UPDATE cronograma_actividades 
-            SET fecha = $1, tipo = $2, zona = $3, direccion = $4, nombre_cliente = $5, telefono = $6, descripcion = $7, asignado_a = $8, prioridad = $9, estado = $10
-            WHERE id = $11
+            SET fecha = $1, tipo = $2, zona = $3, direccion = $4, nombre_cliente = $5, telefono = $6, descripcion = $7, asignado_a = $8, prioridad = $9, estado = $10, id_ticket_wisphub = $11
+            WHERE id = $12
             RETURNING *;
         `;
         
-        const values = [fecha, tipo, zona, direccion, nombre_cliente, telefono, descripcion, asignado_a, prioridad || 0, estado || 'PENDIENTE', id];
+        const values = [
+            fecha, 
+            tipo, 
+            zona, 
+            direccion, 
+            nombre_cliente, 
+            telefono, 
+            descripcion, 
+            asignado_a, 
+            prioridad || 0, 
+            estado || 'PENDIENTE', 
+            id_ticket_wisphub || null, // <-- Aseguramos que se actualice o mantenga el ID del ticket
+            id
+        ];
         
         const { rows } = await pool.query(query, values);
 
