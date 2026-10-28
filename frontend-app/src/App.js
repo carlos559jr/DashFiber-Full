@@ -87,7 +87,7 @@ function AdminPanel() {
       const response = await axios.get('https://dashfiber-backend.onrender.com/api/wisphub/tickets');
       if (response.data.success) {
         setTickets(response.data.data);
-        setPaginaActualTickets(1); // Reinicia a la página 1 al sincronizar
+        setPaginaActualTickets(1);
       }
     } catch (err) {
       setErrorTickets('No se pudo conectar con el servidor backend para los tickets.');
@@ -120,13 +120,12 @@ function AdminPanel() {
     if (typeof valorA === 'string') valorA = valorA.toLowerCase();
     if (typeof valorB === 'string') valorB = valorB.toLowerCase();
 
-    // Invertido: si es 'desc', los valores mayores van primero (-1)
     if (valorA < valorB) return ordenDireccionTickets === 'desc' ? 1 : -1;
     if (valorA > valorB) return ordenDireccionTickets === 'desc' ? -1 : 1;
     return 0;
   });
 
-  const indiceUltimoTicket = paginaActualTickets * 5; // Paginación de 5 en 5
+  const indiceUltimoTicket = paginaActualTickets * 5;
   const indicePrimerTicket = indiceUltimoTicket - 5;
   const ticketsActuales = ticketsOrdenados.slice(indicePrimerTicket, indiceUltimoTicket);
   const totalPaginasTickets = Math.ceil(tickets.length / 5);
@@ -151,11 +150,10 @@ function AdminPanel() {
     }
   };
 
- // Carga inicial y configuración del intervalo de sincronización automática (cada 5 minutos)
   useEffect(() => {
     consultarWispHub();
     consultarTicketsWisp();
-    consultarCronograma(filtroFecha); // <--- Usamos filtroFecha para que respete tu selección
+    consultarCronograma(filtroFecha);
 
     const intervalo = setInterval(() => {
       consultarCronograma(filtroFecha);
@@ -209,7 +207,6 @@ function AdminPanel() {
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   };
 
-  // Como el backend ya devuelve los clientes filtrados y listos, usamos directamente clientesWisp
   const clientesFiltrados = clientesWisp;
 
   const seleccionarClienteWisp = (clienteEncontrado) => {
@@ -347,14 +344,25 @@ function AdminPanel() {
     setTextoBusquedaCliente('');
   };
 
-  const consultarTicketsWispHub = async () => {
+  const cerrarTicketDirecto = async (item) => {
+    const idTicket = item.id || item.id_ticket_wisphub;
+    
+    if (!window.confirm(`¿Estás seguro de marcar como REALIZADO y cerrar el ticket de ${item.nombre || 'este cliente'} directamente en WispHub?`)) {
+      return;
+    }
+
     try {
-      const response = await axios.get('https://dashfiber-backend.onrender.com/api/wisphub/tickets'); // O la ruta que utilices para listar
-      if (response.data && response.data.success) {
-        setTicketsWispHub(response.data.data); // O el estado donde guardes los tickets
+      const response = await axios.post('https://dashfiber-backend.onrender.com/api/wisphub/cerrar-ticket', {
+        id_ticket_wisphub: idTicket
+      });
+
+      if (response.data.success) {
+        alert("¡Ticket cerrado con éxito en WispHub!");
+        consultarTicketsWisp();
       }
     } catch (error) {
-      console.error("Error al consultar tickets de WispHub:", error);
+      console.error("Error al cerrar el ticket:", error);
+      alert("Hubo un error al intentar cerrar el ticket en WispHub.");
     }
   };
 
@@ -376,7 +384,7 @@ function AdminPanel() {
   const handleFiltroChange = (e) => {
     const nuevaFecha = e.target.value;
     setFiltroFecha(nuevaFecha);
-    consultarCronograma(nuevaFecha); // Forzamos la consulta al backend con la fecha seleccionada
+    consultarCronograma(nuevaFecha);
   };
 
   const ordenarPor = (campo) => {
@@ -487,33 +495,8 @@ function AdminPanel() {
     return 0;
   });
 
-  const cerrarTicketDirecto = async (item) => {
-  // Asegúrate de usar la propiedad correcta que trae el ID del ticket (puede ser item.id o item.id_ticket)
-  const idTicket = item.id || item.id_ticket_wisphub;
-  
-  if (!window.confirm(`¿Estás seguro de marcar como REALIZADO y cerrar el ticket de ${item.nombre || 'este cliente'} directamente en WispHub?`)) {
-    return;
-  }
-
-  try {
-    const response = await axios.post('https://dashfiber-backend.onrender.com/api/wisphub/cerrar-ticket', {
-      id_ticket_wisphub: idTicket
-    });
-
-    if (response.data.success) {
-      alert("¡Ticket cerrado con éxito en WispHub!");
-      // Aquí recargas la lista de tickets pendientes para que desaparezca el que acabas de cerrar
-      consultarTicketsWispHub(); // O la función que uses para refrescar la tabla
-    }
-  } catch (error) {
-    console.error("Error al cerrar el ticket:", error);
-    alert("Hubo un error al intentar cerrar el ticket en WispHub.");
-  }
-};
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-      
       <div className="container" style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '1400px', margin: '0 auto', gap: '30px', padding: '20px' }}>
         
         {/* SECCIÓN 1: INSTALACIONES WISPHUB */}
@@ -604,53 +587,50 @@ function AdminPanel() {
             ) : (
               <>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-  <thead>
-    <tr style={{ background: '#edf2f7', color: '#2d3748', textAlign: 'left' }}>
-      <th onClick={() => ordenarTicketsPor('localidad')} style={{ padding: '12px', cursor: 'pointer' }}>BARRIO {obtenerFlechaTickets('localidad')}</th>
-      <th onClick={() => ordenarTicketsPor('direccion')} style={{ padding: '12px', cursor: 'pointer' }}>DIRECCIÓN {obtenerFlechaTickets('direccion')}</th>
-      <th onClick={() => ordenarTicketsPor('nombre')} style={{ padding: '12px', cursor: 'pointer' }}>NOMBRE CLIENTE {obtenerFlechaTickets('nombre')}</th>
-      <th onClick={() => ordenarTicketsPor('telefono')} style={{ padding: '12px', cursor: 'pointer' }}>TELÉFONO {obtenerFlechaTickets('telefono')}</th>
-      <th onClick={() => ordenarTicketsPor('fechaTicket')} style={{ padding: '12px', cursor: 'pointer' }}>FECHA {obtenerFlechaTickets('fechaTicket')}</th>
-      <th onClick={() => ordenarTicketsPor('asunto')} style={{ padding: '12px', cursor: 'pointer' }}>ASUNTO {obtenerFlechaTickets('asunto')}</th>
-      <th style={{ padding: '12px', textAlign: 'center' }}>ACCIONES</th>
-    </tr>
-  </thead>
-  <tbody>
-    {ticketsActuales.map((item, index) => (
-      <tr key={item.id || index} style={{ borderBottom: '1px solid #edf2f7' }}>
-        <td style={{ padding: '12px' }}><span className="badge-barrio">{item.localidad || 'SIN BARRIO'}</span></td>
-        <td style={{ padding: '12px' }}>📍 {item.direccion || 'SIN DIRECCIÓN'}</td>
-        <td style={{ padding: '12px' }}><b>{item.nombre || 'SIN NOMBRE'}</b></td>
-        <td style={{ padding: '12px' }}>📞 <a href={`tel:${item.telefono}`} className="phone-link"> {item.telefono || 'SIN'}</a></td>
-        <td style={{ padding: '12px' }}>⚡ {item.fechaTicket}</td>
-        <td style={{ padding: '12px' }}>💬 {item.asunto || 'SIN ASUNTO'}</td>
-        <td style={{ padding: '12px', textAlign: 'center' }}>
-          <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-            {/* Botón existente para enviar al cronograma */}
-            <button 
-              onClick={() => enviarTicketAlCronograma(item)}
-              title="Enviar Ticket al Cronograma"
-              style={{ background: '#3182ce', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
-            >
-              📥 Enviar
-            </button>
-            
-            {/* Nuevo botón para cerrar directamente */}
-            <button 
-              onClick={() => cerrarTicketDirecto(item)}
-              title="Cerrar ticket directamente como Realizado"
-              style={{ background: '#38a169', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
-            >
-              ✅ Realizado
-            </button>
-          </div>
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
+                  <thead>
+                    <tr style={{ background: '#edf2f7', color: '#2d3748', textAlign: 'left' }}>
+                      <th onClick={() => ordenarTicketsPor('localidad')} style={{ padding: '12px', cursor: 'pointer' }}>BARRIO {obtenerFlechaTickets('localidad')}</th>
+                      <th onClick={() => ordenarTicketsPor('direccion')} style={{ padding: '12px', cursor: 'pointer' }}>DIRECCIÓN {obtenerFlechaTickets('direccion')}</th>
+                      <th onClick={() => ordenarTicketsPor('nombre')} style={{ padding: '12px', cursor: 'pointer' }}>NOMBRE CLIENTE {obtenerFlechaTickets('nombre')}</th>
+                      <th onClick={() => ordenarTicketsPor('telefono')} style={{ padding: '12px', cursor: 'pointer' }}>TELÉFONO {obtenerFlechaTickets('telefono')}</th>
+                      <th onClick={() => ordenarTicketsPor('fechaTicket')} style={{ padding: '12px', cursor: 'pointer' }}>FECHA {obtenerFlechaTickets('fechaTicket')}</th>
+                      <th onClick={() => ordenarTicketsPor('asunto')} style={{ padding: '12px', cursor: 'pointer' }}>ASUNTO {obtenerFlechaTickets('asunto')}</th>
+                      <th style={{ padding: '12px', textAlign: 'center' }}>ACCIONES</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ticketsActuales.map((item, index) => (
+                      <tr key={item.id || index} style={{ borderBottom: '1px solid #edf2f7' }}>
+                        <td style={{ padding: '12px' }}><span className="badge-barrio">{item.localidad || 'SIN BARRIO'}</span></td>
+                        <td style={{ padding: '12px' }}>📍 {item.direccion || 'SIN DIRECCIÓN'}</td>
+                        <td style={{ padding: '12px' }}><b>{item.nombre || 'SIN NOMBRE'}</b></td>
+                        <td style={{ padding: '12px' }}>📞 <a href={`tel:${item.telefono}`} className="phone-link"> {item.telefono || 'SIN'}</a></td>
+                        <td style={{ padding: '12px' }}>⚡ {item.fechaTicket}</td>
+                        <td style={{ padding: '12px' }}>💬 {item.asunto || 'SIN ASUNTO'}</td>
+                        <td style={{ padding: '12px', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                            <button 
+                              onClick={() => enviarTicketAlCronograma(item)}
+                              title="Enviar Ticket al Cronograma"
+                              style={{ background: '#3182ce', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                            >
+                              📥 Enviar
+                            </button>
+                            
+                            <button 
+                              onClick={() => cerrarTicketDirecto(item)}
+                              title="Cerrar ticket directamente como Realizado"
+                              style={{ background: '#38a169', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                            >
+                              ✅ Realizado
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
 
-                {/* Controles de Paginación */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', padding: '0 5px' }}>
                   <span style={{ fontSize: '14px', color: '#718096' }}>Página {paginaActualTickets} de {totalPaginasTickets || 1}</span>
                   <div style={{ display: 'flex', gap: '10px' }}>
@@ -665,7 +645,6 @@ function AdminPanel() {
 
         {/* SECCIÓN 2: CRONOGRAMA DE ACTIVIDADES Y MANTENIMIENTOS */}
         <div className="card" style={{ width: '100%' }}>
-          
           <div className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
             <div>
               <h2 className="title">📅 Cronograma de Actividades y Mantenimientos</h2>
@@ -849,7 +828,6 @@ function AdminPanel() {
             </div>
           </div>
 
-          {/* TABLA FLUIDA SIN SCROLL HORIZONTAL */}
           <div style={{ width: '100%', overflowX: 'hidden' }}>
             {cronogramaOrdenado.length === 0 ? (
               <div className="empty-state">
@@ -946,7 +924,7 @@ function AdminPanel() {
 
         </div>
 
-        {/* NAVEGACIÓN INFERIOR (BOTONES AL FINAL DE TODO) */}
+        {/* NAVEGACIÓN INFERIOR */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', marginTop: '10px', paddingBottom: '20px' }}>
           <Link to="/tecnicos" style={{ padding: '10px 20px', background: '#2b6cb0', color: '#fff', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
             📱 Vista de Técnicos
@@ -957,7 +935,6 @@ function AdminPanel() {
         </div>
 
       </div>
-
     </div>
   );
 }
