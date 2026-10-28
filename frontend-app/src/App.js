@@ -476,6 +476,30 @@ function AdminPanel() {
     return 0;
   });
 
+  const cerrarTicketDirecto = async (item) => {
+  // Asegúrate de usar la propiedad correcta que trae el ID del ticket (puede ser item.id o item.id_ticket)
+  const idTicket = item.id || item.id_ticket_wisphub;
+  
+  if (!window.confirm(`¿Estás seguro de marcar como REALIZADO y cerrar el ticket de ${item.nombre || 'este cliente'} directamente en WispHub?`)) {
+    return;
+  }
+
+  try {
+    const response = await axios.post('https://dashfiber-backend.onrender.com/api/wisphub/cerrar-ticket', {
+      id_ticket_wisphub: idTicket
+    });
+
+    if (response.data.success) {
+      alert("¡Ticket cerrado con éxito en WispHub!");
+      // Aquí recargas la lista de tickets pendientes para que desaparezca el que acabas de cerrar
+      consultarTicketsWispHub(); // O la función que uses para refrescar la tabla
+    }
+  } catch (error) {
+    console.error("Error al cerrar el ticket:", error);
+    alert("Hubo un error al intentar cerrar el ticket en WispHub.");
+  }
+};
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
       
@@ -569,39 +593,51 @@ function AdminPanel() {
             ) : (
               <>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                  <thead>
-                    <tr style={{ background: '#edf2f7', color: '#2d3748', textAlign: 'left' }}>
-                      <th onClick={() => ordenarTicketsPor('localidad')} style={{ padding: '12px', cursor: 'pointer' }}>BARRIO {obtenerFlechaTickets('localidad')}</th>
-                      <th onClick={() => ordenarTicketsPor('direccion')} style={{ padding: '12px', cursor: 'pointer' }}>DIRECCIÓN {obtenerFlechaTickets('direccion')}</th>
-                      <th onClick={() => ordenarTicketsPor('nombre')} style={{ padding: '12px', cursor: 'pointer' }}>NOMBRE CLIENTE {obtenerFlechaTickets('nombre')}</th>
-                      <th onClick={() => ordenarTicketsPor('telefono')} style={{ padding: '12px', cursor: 'pointer' }}>TELÉFONO {obtenerFlechaTickets('telefono')}</th>
-                      <th onClick={() => ordenarTicketsPor('fechaTicket')} style={{ padding: '12px', cursor: 'pointer' }}>FECHA {obtenerFlechaTickets('fechaTicket')}</th>
-                      <th onClick={() => ordenarTicketsPor('asunto')} style={{ padding: '12px', cursor: 'pointer' }}>ASUNTO {obtenerFlechaTickets('asunto')}</th>
-                      <th style={{ padding: '12px', textAlign: 'center' }}>ACCIÓN</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ticketsActuales.map((item, index) => (
-                      <tr key={item.id || index} style={{ borderBottom: '1px solid #edf2f7' }}>
-                        <td style={{ padding: '12px' }}><span className="badge-barrio">{item.localidad || 'SIN BARRIO'}</span></td>
-                        <td style={{ padding: '12px' }}>📍 {item.direccion || 'SIN DIRECCIÓN'}</td>
-                        <td style={{ padding: '12px' }}><b>{item.nombre || 'SIN NOMBRE'}</b></td>
-                        <td style={{ padding: '12px' }}>📞 <a href={`tel:${item.telefono}`} className="phone-link"> {item.telefono || 'SIN'}</a></td>
-                        <td style={{ padding: '12px' }}>⚡ {item.fechaTicket}</td>
-                        <td style={{ padding: '12px' }}>💬 {item.asunto || 'SIN ASUNTO'}</td>
-                        <td style={{ padding: '12px', textAlign: 'center' }}>
-                          <button 
-                            onClick={() => enviarTicketAlCronograma(item)}
-                            title="Enviar Ticket al Cronograma"
-                            style={{ background: '#3182ce', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
-                          >
-                            📥 Enviar
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+  <thead>
+    <tr style={{ background: '#edf2f7', color: '#2d3748', textAlign: 'left' }}>
+      <th onClick={() => ordenarTicketsPor('localidad')} style={{ padding: '12px', cursor: 'pointer' }}>BARRIO {obtenerFlechaTickets('localidad')}</th>
+      <th onClick={() => ordenarTicketsPor('direccion')} style={{ padding: '12px', cursor: 'pointer' }}>DIRECCIÓN {obtenerFlechaTickets('direccion')}</th>
+      <th onClick={() => ordenarTicketsPor('nombre')} style={{ padding: '12px', cursor: 'pointer' }}>NOMBRE CLIENTE {obtenerFlechaTickets('nombre')}</th>
+      <th onClick={() => ordenarTicketsPor('telefono')} style={{ padding: '12px', cursor: 'pointer' }}>TELÉFONO {obtenerFlechaTickets('telefono')}</th>
+      <th onClick={() => ordenarTicketsPor('fechaTicket')} style={{ padding: '12px', cursor: 'pointer' }}>FECHA {obtenerFlechaTickets('fechaTicket')}</th>
+      <th onClick={() => ordenarTicketsPor('asunto')} style={{ padding: '12px', cursor: 'pointer' }}>ASUNTO {obtenerFlechaTickets('asunto')}</th>
+      <th style={{ padding: '12px', textAlign: 'center' }}>ACCIONES</th>
+    </tr>
+  </thead>
+  <tbody>
+    {ticketsActuales.map((item, index) => (
+      <tr key={item.id || index} style={{ borderBottom: '1px solid #edf2f7' }}>
+        <td style={{ padding: '12px' }}><span className="badge-barrio">{item.localidad || 'SIN BARRIO'}</span></td>
+        <td style={{ padding: '12px' }}>📍 {item.direccion || 'SIN DIRECCIÓN'}</td>
+        <td style={{ padding: '12px' }}><b>{item.nombre || 'SIN NOMBRE'}</b></td>
+        <td style={{ padding: '12px' }}>📞 <a href={`tel:${item.telefono}`} className="phone-link"> {item.telefono || 'SIN'}</a></td>
+        <td style={{ padding: '12px' }}>⚡ {item.fechaTicket}</td>
+        <td style={{ padding: '12px' }}>💬 {item.asunto || 'SIN ASUNTO'}</td>
+        <td style={{ padding: '12px', textAlign: 'center' }}>
+          <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+            {/* Botón existente para enviar al cronograma */}
+            <button 
+              onClick={() => enviarTicketAlCronograma(item)}
+              title="Enviar Ticket al Cronograma"
+              style={{ background: '#3182ce', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+            >
+              📥 Enviar
+            </button>
+            
+            {/* Nuevo botón para cerrar directamente */}
+            <button 
+              onClick={() => cerrarTicketDirecto(item)}
+              title="Cerrar ticket directamente como Realizado"
+              style={{ background: '#38a169', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+            >
+              ✅ Realizado
+            </button>
+          </div>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
 
                 {/* Controles de Paginación */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', padding: '0 5px' }}>

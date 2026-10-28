@@ -158,6 +158,37 @@ app.get('/api/wisphub/clientes', async (req, res) => {
     }
 });
 
+const FormData = require('form-data');
+
+app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
+    try {
+        const { id_ticket_wisphub } = req.body;
+        
+        if (!id_ticket_wisphub) {
+            return res.status(400).json({ success: false, message: 'No se proporcionó el ID del ticket.' });
+        }
+
+        const urlRespuesta = `https://api.wisphub.app/api/tickets/${id_ticket_wisphub}/respuesta/`;
+        
+        const formData = new FormData();
+        formData.append('ticket-estado', '4'); // Cerrado
+        formData.append('ticket-prioridad', '2'); // Normal
+        formData.append('respuesta', 'REALIZADO');
+
+        const respuestaWisp = await axios.post(urlRespuesta, formData, {
+            headers: { 
+                'Authorization': `Api-Key ${WISP_API_TOKEN}`,
+                ...formData.getHeaders()
+            }
+        });
+
+        res.json({ success: true, message: `Ticket #${id_ticket_wisphub} cerrado con éxito.`, data: respuestaWisp.data });
+    } catch (error) {
+        console.error("Error al cerrar ticket en WispHub:", error.response?.data || error.message);
+        res.status(500).json({ success: false, message: 'Error al conectar con WispHub.' });
+    }
+});
+
 // Función auxiliar para transformar de MM/DD/YYYY a DD-MM-YYYY
 const formatearFecha = (fechaStr) => {
     if (!fechaStr) return 'POR PROGRAMAR';
