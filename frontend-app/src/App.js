@@ -347,6 +347,17 @@ function AdminPanel() {
     setTextoBusquedaCliente('');
   };
 
+  const consultarTicketsWispHub = async () => {
+    try {
+      const response = await axios.get('https://dashfiber-backend.onrender.com/api/wisphub/tickets'); // O la ruta que utilices para listar
+      if (response.data && response.data.success) {
+        setTicketsWispHub(response.data.data); // O el estado donde guardes los tickets
+      }
+    } catch (error) {
+      console.error("Error al consultar tickets de WispHub:", error);
+    }
+  };
+
   const eliminarActividad = async (id) => {
     if (window.confirm('¿Estás seguro de eliminar este registro del cronograma?')) {
       try {
