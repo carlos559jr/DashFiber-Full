@@ -576,6 +576,7 @@ function AdminPanel() {
                       <th onClick={() => ordenarTicketsPor('nombre')} style={{ padding: '12px', cursor: 'pointer' }}>NOMBRE CLIENTE {obtenerFlechaTickets('nombre')}</th>
                       <th onClick={() => ordenarTicketsPor('telefono')} style={{ padding: '12px', cursor: 'pointer' }}>TELÉFONO {obtenerFlechaTickets('telefono')}</th>
                       <th onClick={() => ordenarTicketsPor('fechaTicket')} style={{ padding: '12px', cursor: 'pointer' }}>FECHA {obtenerFlechaTickets('fechaTicket')}</th>
+                      <th onClick={() => ordenarTicketsPor('asunto')} style={{ padding: '12px', cursor: 'pointer' }}>ASUNTO {obtenerFlechaTickets('asunto')}</th>
                       <th style={{ padding: '12px', textAlign: 'center' }}>ACCIÓN</th>
                     </tr>
                   </thead>
@@ -587,6 +588,7 @@ function AdminPanel() {
                         <td style={{ padding: '12px' }}><b>{item.nombre || 'SIN NOMBRE'}</b></td>
                         <td style={{ padding: '12px' }}>📞 <a href={`tel:${item.telefono}`} className="phone-link"> {item.telefono || 'SIN'}</a></td>
                         <td style={{ padding: '12px' }}>⚡ {item.fechaTicket}</td>
+                        <td style={{ padding: '12px' }}>💬 {item.asunto || 'SIN ASUNTO'}</td>
                         <td style={{ padding: '12px', textAlign: 'center' }}>
                           <button 
                             onClick={() => enviarTicketAlCronograma(item)}
@@ -599,7 +601,7 @@ function AdminPanel() {
                       </tr>
                     ))}
                   </tbody>
-</table>
+                </table>
 
                 {/* Controles de Paginación */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', padding: '0 5px' }}>
