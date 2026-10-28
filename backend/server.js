@@ -3,6 +3,7 @@ const cors = require('cors');
 const axios = require('axios');
 require('dotenv').config();
 const { Pool } = require('pg');
+const FormData = require('form-data');
 
 const app = express();
 app.use(express.json());
@@ -15,10 +16,10 @@ const WISP_TICKETS_URL = "https://api.wisphub.app/api/tickets/";
 
 // Configuración de la base de datos PostgreSQL (Supabase)
 const pool = new Pool({
-  connectionString: 'postgresql://postgres.qtylomhtanzipwclbjoc:Aw96b610265420+@aws-0-us-east-2.pooler.supabase.com:5432/postgres',
-  ssl: {
-    rejectUnauthorized: false
-  }
+    connectionString: 'postgresql://postgres.qtylomhtanzipwclbjoc:Aw96b610265420+@aws-0-us-east-2.pooler.supabase.com:5432/postgres',
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 // Ruta raíz para evitar el error "Cannot GET /"
@@ -95,12 +96,6 @@ app.get('/api/wisphub/tickets', async (req, res) => {
     }
 });
 
-
-// ==========================================
-// 2. RUTA PARA CERRAR EL TICKET EN WISPHUB (NUEVA)
-// ==========================================
-
-
 // Ruta para traer los clientes de WispHub con filtrado inteligente por nombre completo
 app.get('/api/wisphub/clientes', async (req, res) => {
     try {
@@ -109,11 +104,9 @@ app.get('/api/wisphub/clientes', async (req, res) => {
             return res.json({ success: true, data: [] });
         }
 
-        // Dividimos la búsqueda por espacios por si escriben "Nombre Apellido"
         const partes = buscar.split(/\s+/);
-        const terminoPrincipal = partes[0]; // Tomamos la primera palabra para buscar en WispHub
+        const terminoPrincipal = partes[0]; 
 
-        // Consultamos a WispHub usando la primera palabra para asegurar que traiga los registros base
         const [resNombre, resApellido] = await Promise.all([
             axios.get(WISP_CLIENTES, {
                 params: { limit: 500, nombre__contains: terminoPrincipal },
@@ -129,20 +122,16 @@ app.get('/api/wisphub/clientes', async (req, res) => {
         const listaNombre = resNombre.data.results || resNombre.data || [];
         const listaApellido = resApellido.data.results || resApellido.data || [];
 
-        // Unimos ambas listas de forma segura
         const todosLosClientes = [...listaNombre, ...listaApellido];
 
-        // Filtramos en memoria para soportar nombres completos o múltiples palabras (ej: "Adriana Molina")
         const clientesFiltrados = todosLosClientes.filter(cli => {
             const nombre = (cli.nombre || cli.nombres || '').toLowerCase();
             const apellido = (cli.apellido || cli.apellidos || '').toLowerCase();
             const completo = `${nombre} ${apellido}`;
             
-            // Verificamos que CADA palabra escrita por el usuario esté contenida en el registro del cliente
             return partes.every(part => completo.includes(part.toLowerCase()));
         });
 
-        // Eliminamos duplicados
         const mapaClientes = new Map();
         clientesFiltrados.forEach((cli) => {
             const identificadorUnico = cli.id || cli.id_cliente || cli.id_servicio || JSON.stringify(cli);
@@ -158,8 +147,28 @@ app.get('/api/wisphub/clientes', async (req, res) => {
     }
 });
 
-const FormData = require('form-data');
+// ==========================================
+// FUNCIÓN AUXILIAR CENTRALIZADA PARA WISPHUB
+// ==========================================
+const ejecutarCierreEnWispHub = async (idTicket) => {
+    const urlRespuesta = `https://api.wisphub.app/api/tickets/${idTicket}/respuesta/`;
+    
+    const formData = new FormData();
+    formData.append('ticket-estado', '4');    // 4 = Cerrado
+    formData.append('ticket-prioridad', '2'); // 2 = Normal
+    formData.append('respuesta', 'REALIZADO'); // Texto de respuesta
 
+    return await axios.post(urlRespuesta, formData, {
+        headers: { 
+            'Authorization': `Api-Key ${WISP_API_TOKEN}`,
+            ...formData.getHeaders()
+        }
+    });
+};
+
+// ==========================================
+// 2. RUTA PARA CERRAR TICKET DIRECTAMENTE
+// ==========================================
 app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
     try {
         const { id_ticket_wisphub } = req.body;
@@ -168,19 +177,7 @@ app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
             return res.status(400).json({ success: false, message: 'No se proporcionó el ID del ticket.' });
         }
 
-        const urlRespuesta = `https://api.wisphub.app/api/tickets/${id_ticket_wisphub}/respuesta/`;
-        
-        const formData = new FormData();
-        formData.append('ticket-estado', '4'); // Cerrado
-        formData.append('ticket-prioridad', '2'); // Normal
-        formData.append('respuesta', 'REALIZADO');
-
-        const respuestaWisp = await axios.post(urlRespuesta, formData, {
-            headers: { 
-                'Authorization': `Api-Key ${WISP_API_TOKEN}`,
-                ...formData.getHeaders()
-            }
-        });
+        const respuestaWisp = await ejecutarCierreEnWispHub(id_ticket_wisphub);
 
         res.json({ success: true, message: `Ticket #${id_ticket_wisphub} cerrado con éxito.`, data: respuestaWisp.data });
     } catch (error) {
@@ -189,11 +186,10 @@ app.post('/api/wisphub/cerrar-ticket', async (req, res) => {
     }
 });
 
-// Función auxiliar para transformar de MM/DD/YYYY a DD-MM-YYYY
+// Función auxiliar para transformar fechas
 const formatearFecha = (fechaStr) => {
     if (!fechaStr) return 'POR PROGRAMAR';
     
-    // Si viene en formato "MM/DD/YYYY HH:mm:ss"
     const partes = fechaStr.split(' ');
     if (partes.length > 0) {
         const fechaPartes = partes[0].split('/');
@@ -202,7 +198,6 @@ const formatearFecha = (fechaStr) => {
             return `${dia}/${mes}/${anio} ${partes[1] || ''}`.trim();
         }
         
-        // Si viene en formato ISO (ej. 2026-10-16T...)
         if (fechaStr.includes('T')) {
             const fechaIso = new Date(fechaStr);
             if (!isNaN(fechaIso.getTime())) {
@@ -217,7 +212,7 @@ const formatearFecha = (fechaStr) => {
     return fechaStr;
 };
 
-// Ruta para obtener el cronograma (con soporte seguro para filtrar por fecha exacta)
+// Ruta para obtener el cronograma
 app.get('/api/cronograma', async (req, res) => {
     try {
         const { fecha } = req.query;
@@ -225,7 +220,6 @@ app.get('/api/cronograma', async (req, res) => {
         let values = [];
 
         if (fecha) {
-            // Usamos CAST para comparar solo la fecha sin importar si la columna es timestamp o date
             query += ' WHERE fecha::text LIKE $1';
             values.push(`${fecha}%`);
         }
@@ -291,7 +285,7 @@ app.put('/api/cronograma/:id', async (req, res) => {
             fecha, tipo, zona, direccion, nombre_cliente, telefono, descripcion, asignado_a, 
             prioridad || 0, 
             estado || 'PENDIENTE', 
-            id_ticket_wisphub || null, // Si viene nulo al editar, COALESCE mantiene el anterior
+            id_ticket_wisphub || null,
             id
         ];
         
@@ -308,9 +302,7 @@ app.put('/api/cronograma/:id', async (req, res) => {
     }
 });
 
-// RUTA ACTUALIZADA: Actualiza estado, fecha, adjunta comentario de pospuesto y cierra el ticket en WispHub si aplica
-const FormData = require('form-data'); // Asegúrate de tener este paquete requerido arriba
-
+// RUTA PUT: Actualiza estado, fecha, adjunta comentario de pospuesto y cierra el ticket en WispHub si aplica
 app.put('/api/cronograma/:id/estado', async (req, res) => {
     try {
         const { id } = req.params;
@@ -356,19 +348,7 @@ app.put('/api/cronograma/:id/estado', async (req, res) => {
         const estadoUpper = (estado || '').toUpperCase();
         if (estadoUpper === 'REALIZADO' && actividadActualizada.id_ticket_wisphub) {
             try {
-                const urlRespuesta = `https://api.wisphub.app/api/tickets/${actividadActualizada.id_ticket_wisphub}/respuesta/`;
-                
-                const formData = new FormData();
-                formData.append('ticket-estado', '4');
-                formData.append('ticket-prioridad', '2');
-                formData.append('respuesta', 'REALIZADO');
-
-                await axios.post(urlRespuesta, formData, {
-                    headers: { 
-                        'Authorization': `Api-Key ${WISP_API_TOKEN}`,
-                        ...formData.getHeaders()
-                    }
-                });
+                await ejecutarCierreEnWispHub(actividadActualizada.id_ticket_wisphub);
             } catch (wispError) {
                 console.error("Error al cerrar ticket en WispHub:", wispError.response?.data || wispError.message);
             }
