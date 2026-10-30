@@ -72,12 +72,16 @@ app.get('/api/wisphub/tickets', async (req, res) => {
 
         const listaTickets = response.data.results || response.data;
 
-        const ticketsNuevos = (Array.isArray(listaTickets) ? listaTickets : []).filter(item => {
-            const estado = (item.estado || '').toLowerCase();
-            return estado === 'nuevo' || estado === 'pendiente' || estado === 'abierto';
-        });
+        // AQUÍ Hacemos la prueba: Imprimimos cuántos llegan y mostramos todos sin filtrar
+        console.log("Total de tickets recibidos de WispHub sin filtro:", Array.isArray(listaTickets) ? listaTickets.length : 0);
+        if (Array.isArray(listaTickets) && listaTickets.length > 0) {
+            console.log("Ejemplo del primer ticket y su estado:", {
+                id: listaTickets[0].id_ticket || listaTickets[0].id,
+                estado: listaTickets[0].estado
+            });
+        }
 
-        const ticketsFormateados = ticketsNuevos.map(item => ({
+        const ticketsFormateados = (Array.isArray(listaTickets) ? listaTickets : []).map(item => ({
             id: item.id_ticket || item.id,
             localidad: (item.servicio?.localidad || item.localidad || 'SIN BARRIO').toUpperCase(),
             direccion: (item.servicio?.direccion || item.direccion || 'SIN DIRECCIÓN').toUpperCase(),
@@ -95,7 +99,6 @@ app.get('/api/wisphub/tickets', async (req, res) => {
         res.status(500).json({ success: false, message: 'Error al conectar con WispHub para obtener tickets' });
     }
 });
-
 // Ruta para traer los clientes de WispHub con filtrado inteligente por nombre completo
 app.get('/api/wisphub/clientes', async (req, res) => {
     try {
