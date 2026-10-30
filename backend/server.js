@@ -62,8 +62,18 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
 // ==========================================
 app.get('/api/wisphub/tickets', async (req, res) => {
     try {
+        // 1. Calcular de forma dinámica la fecha de hace exactamente 1 año
+        const fechaHaceUnAnio = new Date();
+        fechaHaceUnAnio.setFullYear(fechaHaceUnAnio.getFullYear() - 1);
+        
+        const anio = fechaHaceUnAnio.getFullYear();
+        const mes = String(fechaHaceUnAnio.getMonth() + 1).padStart(2, '0');
+        const dia = String(fechaHaceUnAnio.getDate()).padStart(2, '0');
+        const fechaDinamica = `${anio}-${mes}-${dia} 00:00:00`;
+
+        // 2. Hacer la petición a WispHub usando el parámetro dinámico
         const response = await axios.get(WISP_TICKETS_URL, {
-            params: { limit: 100, offset: 0 },
+            params: { limit: 100, offset: 0, fecha_creacion_0: fechaDinamica },
             headers: { 
                 'Authorization': `Api-Key ${WISP_API_TOKEN}`,
                 'Content-Type': 'application/json'
@@ -72,16 +82,12 @@ app.get('/api/wisphub/tickets', async (req, res) => {
 
         const listaTickets = response.data.results || response.data;
 
-        // AQUÍ Hacemos la prueba: Imprimimos cuántos llegan y mostramos todos sin filtrar
-        console.log("Total de tickets recibidos de WispHub sin filtro:", Array.isArray(listaTickets) ? listaTickets.length : 0);
-        if (Array.isArray(listaTickets) && listaTickets.length > 0) {
-            console.log("Ejemplo del primer ticket y su estado:", {
-                id: listaTickets[0].id_ticket || listaTickets[0].id,
-                estado: listaTickets[0].estado
-            });
-        }
+        const ticketsNuevos = (Array.isArray(listaTickets) ? listaTickets : []).filter(item => {
+            const estado = (item.estado || '').toLowerCase();
+            return estado === 'nuevo' || estado === 'pendiente' || estado === 'abierto';
+        });
 
-        const ticketsFormateados = (Array.isArray(listaTickets) ? listaTickets : []).map(item => ({
+        const ticketsFormateados = ticketsNuevos.map(item => ({
             id: item.id_ticket || item.id,
             localidad: (item.servicio?.localidad || item.localidad || 'SIN BARRIO').toUpperCase(),
             direccion: (item.servicio?.direccion || item.direccion || 'SIN DIRECCIÓN').toUpperCase(),
@@ -99,6 +105,7 @@ app.get('/api/wisphub/tickets', async (req, res) => {
         res.status(500).json({ success: false, message: 'Error al conectar con WispHub para obtener tickets' });
     }
 });
+
 // Ruta para traer los clientes de WispHub con filtrado inteligente por nombre completo
 app.get('/api/wisphub/clientes', async (req, res) => {
     try {
