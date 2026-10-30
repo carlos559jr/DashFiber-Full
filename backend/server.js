@@ -62,7 +62,7 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
 // ==========================================
 app.get('/api/wisphub/tickets', async (req, res) => {
     try {
-        // 1. Calcular de forma dinámica la fecha de hace exactamente 1 año
+        // Cálculo dinámico de la fecha de hace exactamente 1 año (Formato YYYY-MM-DD 00:00:00)
         const fechaHaceUnAnio = new Date();
         fechaHaceUnAnio.setFullYear(fechaHaceUnAnio.getFullYear() - 1);
         
@@ -71,9 +71,12 @@ app.get('/api/wisphub/tickets', async (req, res) => {
         const dia = String(fechaHaceUnAnio.getDate()).padStart(2, '0');
         const fechaDinamica = `${anio}-${mes}-${dia} 00:00:00`;
 
-        // 2. Hacer la petición a WispHub usando el parámetro dinámico
         const response = await axios.get(WISP_TICKETS_URL, {
-            params: { limit: 100, offset: 0, fecha_creacion_0: fechaDinamica },
+            params: { 
+                limit: 500, 
+                offset: 0, 
+                fecha_creacion_0: fechaDinamica // Filtra dinámicamente desde hace un año hasta hoy
+            },
             headers: { 
                 'Authorization': `Api-Key ${WISP_API_TOKEN}`,
                 'Content-Type': 'application/json'
