@@ -62,26 +62,26 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
 // ==========================================
 app.get('/api/wisphub/tickets', async (req, res) => {
     try {
-        // 1. Fecha de hoy (límite superior: fecha_creacion_1)
+        // 1. Fecha de hoy (límite superior)
         const hoy = new Date();
         const anioHoy = hoy.getFullYear();
         const mesHoy = String(hoy.getMonth() + 1).padStart(2, '0');
         const diaHoy = String(hoy.getDate()).padStart(2, '0');
         const fechaFin = `${anioHoy}-${mesHoy}-${diaHoy}`;
 
-        // 2. Fecha de hace exactamente 1 año (límite inferior: fecha_creacion_0)
-        const fechaHaceUnAnio = new Date();
-        fechaHaceUnAnio.setFullYear(fechaHaceUnAnio.getFullYear() - 1);
-        const anioAnt = fechaHaceUnAnio.getFullYear();
-        const mesAnt = String(fechaHaceUnAnio.getMonth() + 1).padStart(2, '0');
-        const diaAnt = String(fechaHaceUnAnio.getDate()).padStart(2, '0');
+        // 2. Fecha de hace exactamente 2 meses (límite inferior permitido por WispHub)
+        const fechaHaceDosMeses = new Date();
+        fechaHaceDosMeses.setMonth(fechaHaceDosMeses.getMonth() - 2);
+        const anioAnt = fechaHaceDosMeses.getFullYear();
+        const mesAnt = String(fechaHaceDosMeses.getMonth() + 1).padStart(2, '0');
+        const diaAnt = String(fechaHaceDosMeses.getDate()).padStart(2, '0');
         const fechaInicio = `${anioAnt}-${mesAnt}-${diaAnt}`;
 
         const response = await axios.get(WISP_TICKETS_URL, {
             params: { 
                 limit: 500, 
                 offset: 0, 
-                fecha_creacion_0: fechaInicio, // Desde hace un año
+                fecha_creacion_0: fechaInicio, // Desde hace 2 meses
                 fecha_creacion_1: fechaFin     // Hasta hoy
             },
             headers: { 
