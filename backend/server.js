@@ -75,7 +75,7 @@ app.get('/api/wisphub/tickets', async (req, res) => {
             params: { 
                 limit: 500, 
                 offset: 0, 
-                fecha_creacion_0: fechaDinamica // Filtra dinámicamente desde hace un año hasta hoy
+                
             },
             headers: { 
                 'Authorization': `Api-Key ${WISP_API_TOKEN}`,
