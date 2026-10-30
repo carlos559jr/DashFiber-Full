@@ -62,29 +62,33 @@ app.get('/api/wisphub/instalaciones', async (req, res) => {
 // ==========================================
 app.get('/api/wisphub/tickets', async (req, res) => {
     try {
-        // 1. Calcular la fecha de hace exactamente 1 año solo en formato YYYY-MM-DD
+        // 1. Fecha de hoy (límite superior: fecha_creacion_1)
+        const hoy = new Date();
+        const anioHoy = hoy.getFullYear();
+        const mesHoy = String(hoy.getMonth() + 1).padStart(2, '0');
+        const diaHoy = String(hoy.getDate()).padStart(2, '0');
+        const fechaFin = `${anioHoy}-${mesHoy}-${diaHoy}`;
+
+        // 2. Fecha de hace exactamente 1 año (límite inferior: fecha_creacion_0)
         const fechaHaceUnAnio = new Date();
         fechaHaceUnAnio.setFullYear(fechaHaceUnAnio.getFullYear() - 1);
-        
-        const anio = fechaHaceUnAnio.getFullYear();
-        const mes = String(fechaHaceUnAnio.getMonth() + 1).padStart(2, '0');
-        const dia = String(fechaHaceUnAnio.getDate()).padStart(2, '0');
-        const fechaDinamica = `${anio}-${mes}-${dia}`; // Sin horas, solo YYYY-MM-DD
+        const anioAnt = fechaHaceUnAnio.getFullYear();
+        const mesAnt = String(fechaHaceUnAnio.getMonth() + 1).padStart(2, '0');
+        const diaAnt = String(fechaHaceUnAnio.getDate()).padStart(2, '0');
+        const fechaInicio = `${anioAnt}-${mesAnt}-${diaAnt}`;
 
         const response = await axios.get(WISP_TICKETS_URL, {
             params: { 
                 limit: 500, 
                 offset: 0, 
-                fecha_creacion_0: fechaDinamica 
+                fecha_creacion_0: fechaInicio, // Desde hace un año
+                fecha_creacion_1: fechaFin     // Hasta hoy
             },
             headers: { 
                 'Authorization': `Api-Key ${WISP_API_TOKEN}`,
                 'Content-Type': 'application/json'
             }
         });
-
-        // Imprimir la respuesta cruda en los logs de Render para depurar
-        console.log("Respuesta de WispHub con fecha_creacion_0:", response.data);
 
         const listaTickets = response.data.results || response.data;
 
