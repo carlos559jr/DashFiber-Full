@@ -117,6 +117,26 @@ function AdminPanel() {
     let valorA = a[ordenCampoTickets] || '';
     let valorB = b[ordenCampoTickets] || '';
 
+    // Si estamos ordenando por la fecha del ticket, aplicamos orden cronológico real
+    if (ordenCampoTickets === 'fechaTicket') {
+      const parsearFechaTicket = (str) => {
+        if (!str || str === 'SIN' || str === 'POR PROGRAMAR') return 0;
+        // Soporta formatos con guiones (-) o barras (/)
+        const partes = str.split(' ');
+        const fechaPartes = partes[0].split(/[-/]/);
+        if (fechaPartes.length < 3) return 0;
+        const [dia, mes, anio] = fechaPartes;
+        const horaPartes = partes[1] ? partes[1].split(':') : [0, 0, 0];
+        return new Date(anio, mes - 1, dia, horaPartes[0], horaPartes[1], horaPartes[2] || 0).getTime();
+      };
+
+      const tiempoA = parsearFechaTicket(valorA);
+      const tiempoB = parsearFechaTicket(valorB);
+
+      return ordenDireccionTickets === 'desc' ? tiempoB - tiempoA : tiempoA - tiempoB;
+    }
+
+    // Ordenamiento normal para los demás campos de texto
     if (typeof valorA === 'string') valorA = valorA.toLowerCase();
     if (typeof valorB === 'string') valorB = valorB.toLowerCase();
 
